@@ -41,14 +41,14 @@ cd Tima_Library
 
 ```
 Tima_Library/
-├── src/
-│   ├── baseFunction/
-│   │   ├── index.js     # 主要輸出檔案
-│   │   ├── date.js      # 日期相關工具
-│   │   ├── validation.js # 驗證相關工具
-│   │   └── utils.js     # 各式操作瀏覽器工具
-│   └── ...
-│   └── ...
+
+├── baseFunction/
+│   ├── index.js     # 主要輸出檔案
+│   ├── date.js      # 日期相關工具
+│   ├── validation.js # 驗證相關工具
+│   └── utils.js     # 各式操作瀏覽器工具
+└── ...
+└── ...
 
 ```
 
