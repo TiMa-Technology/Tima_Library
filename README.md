@@ -96,26 +96,28 @@ async function loadDateUtils() {
 
 #### 瀏覽器（ESM）
 ```html
+<!-- page.html -->
 <script type="module">
-  import { formatNumber, padDecimals, BaseUtils } from './path/to/utils.js';
+  import { formatNumber, padDecimals, newGuid } from './path/to/utils.js';
 
   // 格式化數字（加上千分位符號）
   console.log(formatNumber(1234567.89)); // "1,234,567.89"
 
   // 產生 GUID
-  console.log(BaseUtils.newGuid());
+  console.log(newGuid());
 </script>
 ```
 
 #### Node.js
 ```javascript
-import { formatNumber, padDecimals, BaseUtils } from './path/to/utils.js';
+// page.js
+import { formatNumber, padDecimals, newGuid } from './path/to/utils.js';
 
 // 格式化數字（加上千分位符號）
 console.log(formatNumber(1234567.89)); // "1,234,567.89"
 
 // 產生 GUID
-console.log(BaseUtils.newGuid());
+console.log(newGuid());
 ```
 
 
