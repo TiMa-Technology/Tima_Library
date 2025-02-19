@@ -36,6 +36,7 @@ cd Tima_Library
 1. 從儲存庫下載或複製 `utils.js` 檔案
 2. 放置到你的專案的源碼目錄中（例如：`src/lib/` 或 `src/utils/`）
 
+> 請注意如果你引入的函式有互相依賴則都需要引入
 
 ## 專案結構
 
@@ -46,7 +47,7 @@ Tima_Library/
 │   ├── index.js     # 主要輸出檔案
 │   ├── date.js      # 日期相關工具
 │   ├── validation.js # 驗證相關工具
-│   └── utils.js     # 各式操作瀏覽器工具
+│   └── utils.js     # 其餘方便的方法
 └── ...
 └── ...
 
@@ -74,11 +75,12 @@ import { formatDateTime, formatROCDate } from '@tima/baseFunction/dateUtils';
 // 只引入數字相關功能
 import { formatNumber, padDecimals } from '@tima/baseFunction/numberUtils';
 
-// 只引入字串相關功能
-import { padLeft, removeThousands } from '@tima/baseFunction/stringUtils';
+// 只引入瀏覽器操作功能
+import { goBack, redirect } from "@tima/browser-utils"
 ```
 
 ### 方式三：依需求動態引入
+注意: 動態引入是個Promise
 
 ```javascript
 // 動態引入特定模組
@@ -90,7 +92,7 @@ async function loadDateUtils() {
 
 ## Getting Started 🏃
 
-> 以下擇一使用，但如果有nodejs請盡量用第二種來達到載入優化
+> 以下擇一使用，但如果有 `nodejs` 請盡量用第二種來達到載入優化
 
 #### 瀏覽器（ESM）
 ```html

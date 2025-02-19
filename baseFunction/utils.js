@@ -84,19 +84,6 @@ export function addCommas(num) {
 }
 
 /**
- * 獲取 URL 查詢參數值
- * @param {string} name - 參數名稱
- * @returns {string} 參數值
- * @example getQueryParam("id") => "123"
- */
-export function getQueryParam(name) {
-  const results = new RegExp("[?&]" + name + "=([^&#]*)").exec(
-    window.location.href
-  )
-  return results ? decodeURI(results[1]) : ""
-}
-
-/**
  * 生成新的 GUID
  * @returns {string} 新的 GUID
  * @example newGuid() => "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"
