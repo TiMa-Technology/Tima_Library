@@ -176,7 +176,7 @@ git checkout -b feature/amazing-feature
 
 4. 提交變更
 ```bash
-git commit -m "新增厲害的功能"
+git commit -m "[feat] 新增厲害的功能"
 ```
 
 5. 推送到你的 Fork
@@ -192,7 +192,7 @@ git push origin feature/amazing-feature
 - 提交 PR
 
 ### Pull Request 指南
-- 每個新函式都需要完整的 JSDoc 文件
+- 每個新函式都需要完整的 `JSDoc` 文件，說明使用方式以及型別標註
 - 遵循現有的程式碼風格
 - 描述新函式的用途和使用場景
 - 在 PR 描述中包含使用範例
@@ -205,10 +205,10 @@ git push origin feature/amazing-feature
 A: ESM 是 JavaScript 的官方標準模組系統，提供更好的程式碼組織方式和執行效能。
 
 ### Q: 可以在舊版瀏覽器中使用嗎？
-A: 建議使用支援 ESM 的現代瀏覽器。如果需要支援舊版瀏覽器，可以使用建構工具（如 Webpack、Rollup）進行打包。
+A: 建議使用支援 ESM 的現代瀏覽器。如果需要支援舊版瀏覽器，可以使用建構工具（如 Rollup、Vite）進行打包。
 
 ### Q: 如何回報問題？
-A: 請在 GitHub 儲存庫中開立 Issue，並提供以下資訊：
+A: 請在 GitHub 儲存庫中開立 [Issue](https://github.com/TiMa-Technology/Tima_Library/issues)，並提供以下資訊：
 - 問題描述
 - 重現步驟
 - 預期行為
