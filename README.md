@@ -112,7 +112,7 @@ import { goBack, redirect } from "@tima/browser-utils"
 ```
 
 ### 方式三：依需求動態引入
-注意: 動態引入是個Promise
+注意: 動態引入是個 `Promise`
 
 ```javascript
 // 動態引入特定模組
