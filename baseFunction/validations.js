@@ -1,3 +1,4 @@
+import { emptyGuid } from "./utils"
 /**
  * 驗證 MAC 地址格式
  * @param {string} address - 要驗證的 MAC 地址
@@ -51,9 +52,9 @@ export function isEmail(email) {
   )
 }
 
-/** 
+/**
  * 檢查日期字串是不是合法
- * 
+ *
  * * 檢查日期字串是不是空值( C# 的 DateTime.MinValue )
  * @param {string} dateString - 要驗證的日期字符串
  * @returns {boolean} 如果是有效的日期則返回 true
@@ -63,24 +64,35 @@ export function isEmail(email) {
  * @example isValidDate("2023-13-05") => false
  */
 export function isValidDate(dateString) {
-    if (!dateString || dateString === "0001-01-01T00:00:00") {
-        return false;
-    }
+  if (!dateString || dateString === "0001-01-01T00:00:00") {
+    return false
+  }
 
-    const regex = /^(\d{4})[-\/](\d{2})[-\/](\d{2})/;
-    const match = dateString.match(regex);
+  const regex = /^(\d{4})[-\/](\d{2})[-\/](\d{2})/
+  const match = dateString.match(regex)
 
-    if (!match) {
-        return false;
-    }
+  if (!match) {
+    return false
+  }
 
-    const [_, year, month, day] = match.map(Number);
+  const [_, year, month, day] = match.map(Number)
 
-    const date = new Date(year, month - 1, day);
-    return (
-        !isNaN(date.getTime()) &&
-        date.getFullYear() === year &&
-        date.getMonth() === month - 1 &&
-        date.getDate() === day
-    );
+  const date = new Date(year, month - 1, day)
+  return (
+    !isNaN(date.getTime()) &&
+    date.getFullYear() === year &&
+    date.getMonth() === month - 1 &&
+    date.getDate() === day
+  )
+}
+
+/** 檢查是否為空的 GUID
+ * @param {string} id - 要檢查的 GUID
+ * @returns {boolean} 如果是空的 GUID 則返回 true
+ * @example isEmptyGuid("00000000-0000-0000-0000-000000000000") => true
+ * @example isEmptyGuid("123e4567-e89b-12d3-a456-426614174000") => false
+ */
+export function isEmptyGuid(id) {
+  const emptyId = emptyGuid()
+  return id === emptyGuid
 }
