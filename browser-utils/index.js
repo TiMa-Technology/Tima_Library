@@ -1,4 +1,4 @@
-import { newGuid } from "../BaseFunction/utils"
+import { newGuid } from "../baseFunction/utils"
 
 /**
  * 進行頁面跳轉。
