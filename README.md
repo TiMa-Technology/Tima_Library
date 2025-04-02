@@ -62,7 +62,7 @@ Tima_Library/
 #### 瀏覽器（ESM）
 ```html
 <!-- page.html -->
-<script type="module"> // 注意在你現在使用的JS檔案必須要使用模組化
+<script type="module"> // 注意在你現在使用的JS檔案必須要使用模組化引入
   import { formatNumber, padDecimals, newGuid } from './path/to/utils.js';
 
   // 格式化數字（加上千分位符號）
