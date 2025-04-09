@@ -149,6 +149,8 @@ button.onclick = async () => {
 ### 在 IDE 中查看
 大多數現代 IDE（如 VS、WebStorm 等）會在游標停留在引入的函式上時顯示 JSDoc 文件：
 
+> 為了方便使用，請一定要加說明、型別以及使用範例
+
 ```javascript
 import { formatNumber } from './path/to/utils.js';
 
