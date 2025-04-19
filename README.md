@@ -4,7 +4,7 @@
 
 ## Prerequisite
 
-- 以下兩者皆可
+以下兩者皆可
 
 ### 原生 ESM（瀏覽器）
 - 支援 ES Modules 的現代瀏覽器
