@@ -1,6 +1,6 @@
 ﻿# Tima Library - JavaScript 工具函式庫  🧰
 
-這是一個 JavaScript 工具函式集合，包含請求處理、加解密、日期處理、字串操作等常用功能。
+這是一個 JavaScript 工具函式集合，包含請求處理、加解密、日期處理、以及各種模組化方法等常用功能。
 
 ## Prerequisite
 
