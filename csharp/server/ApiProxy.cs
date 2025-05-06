@@ -15,10 +15,10 @@ namespace TimaUtils
 {
     /// <summary>
     /// 提供代理 HTTP API 請求到目標伺服器的工具方法，將請求的 headers, body 等完全複製編譯並轉送。
-    /// - Web.Config必須要設置 JumpApiURL 才能使用這個功能。
+    /// - Web.Config 必須要設置 JumpApiURL 才能使用這個功能。
     /// - 這個類別包含了處理 API 跳轉的邏輯，包括壓縮請求和響應的支援。
     /// </summary>
-    public static class ApiProxyUtils
+    public static class UniversalApiProxy
     {
         /// <summary>
         /// HttpClient Instance，用於發送 HTTP 請求。
@@ -99,14 +99,14 @@ namespace TimaUtils
         /// <param name="incomingRequest">要代理的傳入 HTTP 請求。</param>
         /// <param name="requestUrl">可選的目標 URL，若未提供則使用配置中的 JumpApiURL。</param>
         /// <param name="headersToEncode">需要進行編碼/解碼的標頭清單，若為 null 則使用預設清單（EX. http 無法傳輸中文需進行編譯）。</param>
-        /// <returns>包含代理響應的任務，結果為 HTTP 響應訊息。</returns>
+        /// <returns>包含代理回應的Task，結果為 HTTP response訊息。</returns>
         /// <exception cref="Exception">如果 JumpApiURL 未配置或代理過程中發生錯誤，則拋出異常。</exception>
         /// <example>
         /// <code>
         /// var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/api/users");
         /// var headersToEncode = new List&lt;string&gt; { "Upload-Name", "Custom-Header" };
         /// var response = await ApiProxyUtils.ProxyRequestAsync(request, headersToEncode: headersToEncode);
-        /// Console.WriteLine(response.StatusCode); // 輸出響應狀態碼
+        /// Console.WriteLine(response.StatusCode); // 輸出回應狀態碼
         /// </code>
         /// </example>
         public static async Task<HttpResponseMessage> ProxyRequestAsync(HttpRequestMessage incomingRequest, string requestUrl = "", IEnumerable<string> headersToEncode = null)
