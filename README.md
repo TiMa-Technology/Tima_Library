@@ -143,6 +143,6 @@
 ## 尋求幫助
 - JavaScript 相關問題：參考 `javascript/README.md` 或聯繫相關人員 。
 - C# 相關問題：參考 `csharp/README.md` 或聯繫相關人員。
-- 專案通用問題：在本倉庫中開啟 issue。
+- 專案通用問題：在本倉庫中開啟 [issue](https://github.com/TiMa-Technology/Tima_Library/issues/new/choose)。
 
 > 感謝各位為公司庫專案的貢獻！
