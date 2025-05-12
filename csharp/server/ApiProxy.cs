@@ -11,7 +11,7 @@ using System.Web;
 using System.Web.Http;
 using Newtonsoft.Json;
 
-namespace TimaUtils
+namespace TM.v2.TimaUtils
 {
     /// <summary>
     /// 提供代理 HTTP API 請求到目標伺服器的工具方法，將請求的 headers, body 等完全複製編譯並轉送。
