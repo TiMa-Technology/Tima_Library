@@ -45,6 +45,12 @@ namespace TM.v2.TimaUtils
         }
 
         /// <summary>
+        /// 是否需要紀錄日誌。
+        /// 這個屬性會檢查配置中的 "ShouldLog" 設定，並根據其值決定是否啟用日誌記錄。
+        /// </summary>
+        private static bool ShouldLog => System.Configuration.ConfigurationManager.AppSettings["ShouldLog"]?.ToString()?.Trim().Equals("Y", StringComparison.OrdinalIgnoreCase) ?? false;
+
+        /// <summary>
         /// 從請求的路由資料或 URL 片段中提取控制器名稱。
         /// </summary>
         /// <param name="request">包含路由資料或 URL 資訊的 HTTP 請求訊息。</param>
@@ -111,6 +117,23 @@ namespace TM.v2.TimaUtils
         /// </example>
         public static async Task<HttpResponseMessage> ProxyRequestAsync(HttpRequestMessage incomingRequest, string requestUrl = "", IEnumerable<string> headersToEncode = null)
         {
+            #region 跳轉步驟
+            // 1. 獲取應用程式路徑（例如 "/eLearning_v2_entrust"）
+            // 2. 從傳入請求中提取相對路徑
+            // 3. 構建目標 URL
+            // 4. 使用相同 HTTP 方法一樣的請求
+            // 5. 複製 Headers，排除 Host 和 Content-Length, 對指定標頭進行編碼
+            // 6. 複製內容和內容標頭
+            // 7. 處理特殊 HTTP 方法（如 HEAD 和 PATCH）
+            // 8. 轉送請求到目標伺服器
+            // 9. 獲取回應後並創建新的 HttpResponseMessage 來回給客戶端
+            // 10. 複製回應的 Headers，必要時解碼
+            // 11. 複製回應內容
+            // 12. 返回最終的 HttpResponseMessage
+            // 13. 處理異常情況，返回錯誤響應
+            #endregion
+
+
             // 使用傳入的標頭清單或預設清單
             var headersToProcess = headersToEncode?.ToHashSet(StringComparer.OrdinalIgnoreCase) ?? HeadersToEncode;
 
@@ -119,12 +142,13 @@ namespace TM.v2.TimaUtils
                 ? System.Configuration.ConfigurationManager.AppSettings["JumpApiURL"]?.ToString().Trim()
                 : requestUrl;
 
-            // 檢查是否啟用日誌記錄
-            bool shouldLog = System.Configuration.ConfigurationManager.AppSettings["ShouldLog"]?.ToString() == "Y";
-
             // 驗證目標 URL
             if (string.IsNullOrEmpty(targetBaseUrl))
             {
+                if(ShouldLog)
+                {
+                    WriteLog("跳轉的API伺服器網址(JumpApiURL)未設定");
+                }
                 throw new Exception("跳轉的API伺服器網址(JumpApiURL)未設定");
             }
 
@@ -153,6 +177,11 @@ namespace TM.v2.TimaUtils
 
                 // 構建目標 URL
                 string targetUrl = targetBaseUrl + relativePath;
+
+                if (ShouldLog)
+                {
+                    WriteLog($"跳轉的API伺服器目標網址: {targetUrl}");
+                }
 
                 // 使用相同方法創建代理請求
                 var proxyRequest = new HttpRequestMessage(incomingRequest.Method, targetUrl);
@@ -226,6 +255,11 @@ namespace TM.v2.TimaUtils
                 // 轉送代理請求到跳轉的API伺服器
                 var response = await httpClient.SendAsync(proxyRequest, HttpCompletionOption.ResponseHeadersRead);
 
+                if (ShouldLog)
+                {
+                    WriteLog($"跳轉的API伺服器回應: {response.StatusCode}");
+                }
+
                 // 創建回應訊息
                 var responseMessage = new HttpResponseMessage(response.StatusCode);
 
@@ -270,21 +304,37 @@ namespace TM.v2.TimaUtils
             catch (ObjectDisposedException ex)
             {
                 // 處理物件已處置異常
+                if (ShouldLog)
+                {
+                    WriteLog($"API跳轉失敗 - 物件已處置: {ex.Message}, {ex.StackTrace}");
+                }
                 return CreateErrorResponse(HttpStatusCode.InternalServerError, $"API跳轉失敗 - 物件已處置: {ex.Message}, {ex.StackTrace}");
             }
             catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
             {
                 // 處理超時異常
+                if (ShouldLog)
+                {
+                    WriteLog($"API跳轉失敗 - 超時: {ex.Message}, {ex.StackTrace}");
+                }
                 return CreateErrorResponse(HttpStatusCode.RequestTimeout, $"跳轉API超時: {ex.Message}");
             }
             catch (HttpRequestException ex)
             {
                 // 處理 HTTP 相關錯誤
+                if (ShouldLog)
+                {
+                    WriteLog($"API跳轉失敗 - HTTP請求錯誤: {ex.Message}, {ex.StackTrace}");
+                }
                 return CreateErrorResponse(HttpStatusCode.BadGateway, $"跳轉API錯誤: {ex.Message}, {ex.StackTrace}");
             }
             catch (Exception ex)
             {
                 // 處理其他錯誤
+                if (ShouldLog)
+                {
+                    WriteLog($"API跳轉失敗: {ex.Message}, {ex.StackTrace}");
+                }
                 return CreateErrorResponse(HttpStatusCode.InternalServerError, $"API跳轉失敗: {ex.Message}, {ex.StackTrace}");
             }
         }
@@ -301,6 +351,31 @@ namespace TM.v2.TimaUtils
             {
                 Content = new StringContent(message)
             };
+        }
+
+        /// <summary>
+        /// 因為還沒跳轉無法紀錄 DB，寫成 txt 檔案
+        /// config 需要設置 LogPath 才能使用這個功能。
+        /// </summary>
+        /// <param name="values">要編碼的標頭值集合。</param>
+        /// <returns>編碼後的標頭值集合。</returns>
+        private void WriteLog(string message)
+        {
+            string fullMessage = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} {message}\r\n";
+            string logPath = System.Configuration.ConfigurationManager.AppSettings["LogPath"]?.ToString().Trim();
+            if (string.IsNullOrEmpty(logPath))
+            {
+                throw new Exception("LogPath 未設定，無法寫入日誌");
+            }
+            try
+            {
+                System.IO.File.AppendAllText(logPath, fullMessage);
+            }
+            catch (Exception ex)
+            {
+                // 如果寫檔失敗，存到資料庫
+                _errorMessage = "log 寫檔案失敗: " + ex.Message;
+            }
         }
     }
 }
