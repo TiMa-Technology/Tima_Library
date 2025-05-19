@@ -84,6 +84,17 @@ export function addCommas(num) {
 }
 
 /**
+ * 將字符串的首字母大寫
+ * @param {string} str - 要處理的字符串
+ * @returns {string} 首字母大寫的字符串
+ * @example capitalize("hello world") => "Hello world"
+ * @example capitalize("javascript") => "Javascript"
+ */
+export function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
+/**
  * 生成新的 GUID
  * @returns {string} 新的 GUID
  * @example newGuid() => "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"
@@ -105,16 +116,16 @@ export function emptyGuid() {
 }
 
 /**
- * 此函數接受一個字符串，將其編碼為 base64 編碼字符串。
+ * 此函數接受一個字符串，將其`編碼`為 base64 編碼字符串。
  * 
- * 這是對 window.btoa 的替代方案，因為 window.btoa 不能正確地編碼 UTF-8 字符串。
+ * 這是對 window.btoa 的替代方案，因為 window.btoa 不能正確地`編碼` UTF-8 字符串。
  * @param {string} str - 要加密的字符串
  * @returns {Promise<string>} 一個解析為 base64 編碼字符串的 Promise
- * @example btoaEncrypt("Hello world!") => "SGVsbG8gd29ybGQh"
- * @example btoaEncrypt(JSON.stringify({ key: "value" })) => "eyJrZXkiOiJ2YWx1ZSJ9"
+ * @example btoaEncode("Hello world!") => "SGVsbG8gd29ybGQh"
+ * @example btoaEncode(JSON.stringify({ key: "value" })) => "eyJrZXkiOiJ2YWx1ZSJ9"
  * @see https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/btoa
  */
-export async function btoaEncrypt(str) {
+export async function btoaEncode(str, secret = "0x") {
   return btoa(
     encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function (match, p1) {
       return String.fromCharCode("0x" + p1)
@@ -123,18 +134,18 @@ export async function btoaEncrypt(str) {
 }
 
 /**
- * 解密 base64 編碼的字符串。
+ * 解密 base64 `編碼`的字符串。
  *
  * 此函數接受一個 base64 編碼的字符串，解碼它，然後將每個字符轉換為其百分比編碼表示。
  * 最後，它解碼百分比編碼的字符串以返回原始字符串。
  *
  * @param {string} str - 要解密的 base64 編碼字符串。
  * @returns {Promise<string>} 一個解析為解密字符串的 Promise。
- * @example btoaDecrypt("SGVsbG8gd29ybGQh") => "Hello world!"
- * @example btoaDecrypt("eyJrZXkiOiJ2YWx1ZSJ9") => '{"key":"value"}'
+ * @example btoaDecode("SGVsbG8gd29ybGQh") => "Hello world!"
+ * @example btoaDecode("eyJrZXkiOiJ2YWx1ZSJ9") => '{"key":"value"}'
  * @see https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/at
  */
-export async function btoaDecrypt(str) {
+export async function btoaDecode(str) {
   return decodeURIComponent(
     Array.prototype.map
       .call(atob(str), function (c) {
@@ -143,3 +154,11 @@ export async function btoaDecrypt(str) {
       .join("")
   )
 }
+
+/**
+ * 等待指定的毫秒數後回傳 Promise。適合用來進行延遲操作。
+ *
+ * @param {number} ms - 休眠毫秒數
+ * @returns {Promise<void>} 
+ */
+export const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))

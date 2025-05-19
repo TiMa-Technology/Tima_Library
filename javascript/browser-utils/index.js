@@ -21,17 +21,14 @@ export function goBack() {
 
 /**
  * 獲取 URL 參數 QueryString 的 key
- * @param {string} param - 參數名稱
+ * @param {string} key - 參數名稱
  * @returns {string} 參數值
  * @example 
  * // https://www.google.com?key=value
- * getQueryString("key") // value 
+ * getQueryParam("key") // value 
  */
-export function getQueryString(param) {
-  const results = new RegExp("[?&]" + param + "=([^&#]*)").exec(
-    window.location.href
-  )
-  return results ? decodeURI(results[1]) : ""
+export function getQueryParam(key) {
+  return new URLSearchParams(window.location.search).get(key)
 }
 
 /**
@@ -41,24 +38,17 @@ export function getQueryString(param) {
  * @returns {string} 移除參數後的網址。
  * @example
  * // https://www.google.com?key=value&name=test
- * QueryRemoveParam1("https://www.google.com?key=value&name=test", "name") // "https://www.google.com?key=value"
+ * removeUrlParam("https://www.google.com?key=value&name=test", "name") // "https://www.google.com?key=value"
  */
 export function removeUrlParam(url, name) {
-  const urlArr = url.split('?');
-  if (urlArr.length > 1 && urlArr[1].indexOf(name) > -1) {
-    const query = urlArr[1];
-    const obj = {};
-    const arr = query.split("&");
-    for (let i = 0; i < arr.length; i++) {
-      arr[i] = arr[i].split("=");
-      obj[arr[i][0]] = arr[i][1];
-    }
-    delete obj[name];
-    const urlte = urlArr[0] + '?' + JSON.stringify(obj).replace(/[\"\{\}]/g, "").replace(/\:/g, "=").replace(/\,/g, "&");
-    return urlte;
-  } else {
-    return url;
-  }
+  const [base, queryString] = url.split("?");
+  if (!queryString) return url;
+
+  const params = new URLSearchParams(queryString);
+  params.delete(name);
+
+  const newQuery = params.toString();
+  return newQuery ? `${base}?${newQuery}` : base;
 }
 
 /**
