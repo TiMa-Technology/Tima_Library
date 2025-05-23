@@ -23,9 +23,9 @@ export function goBack() {
  * 獲取 URL 參數 QueryString 的 key
  * @param {string} key - 參數名稱
  * @returns {string} 參數值
- * @example 
+ * @example
  * // https://www.google.com?key=value
- * getQueryParam("key") // value 
+ * getQueryParam("key") // value
  */
 export function getQueryParam(key) {
   return new URLSearchParams(window.location.search).get(key)
@@ -41,14 +41,14 @@ export function getQueryParam(key) {
  * removeUrlParam("https://www.google.com?key=value&name=test", "name") // "https://www.google.com?key=value"
  */
 export function removeUrlParam(url, name) {
-  const [base, queryString] = url.split("?");
-  if (!queryString) return url;
+  const [base, queryString] = url.split("?")
+  if (!queryString) return url
 
-  const params = new URLSearchParams(queryString);
-  params.delete(name);
+  const params = new URLSearchParams(queryString)
+  params.delete(name)
 
-  const newQuery = params.toString();
-  return newQuery ? `${base}?${newQuery}` : base;
+  const newQuery = params.toString()
+  return newQuery ? `${base}?${newQuery}` : base
 }
 
 /**

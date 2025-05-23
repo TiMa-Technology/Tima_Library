@@ -27,7 +27,7 @@
  *  ...options
  * });
  * wsClient.CreateWebSocket();
-*/ 
+ */
 export class WebSocketClient {
   ws_lockReconnect = false // 防止短時間內多次重連
   ws_reConTime = 1000 // 初始 1 秒，指數回退

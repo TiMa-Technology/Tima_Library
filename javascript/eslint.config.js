@@ -4,6 +4,7 @@ import prettierPlugin from "eslint-plugin-prettier"
 import importPlugin from "eslint-plugin-import"
 import { fileURLToPath, URL } from "node:url"
 import { includeIgnoreFile } from "@eslint/compat"
+import { error } from "node:console"
 
 const gitignorePath = fileURLToPath(new URL("../.gitignore", import.meta.url))
 
@@ -35,11 +36,11 @@ export default [
       },
     },
     rules: {
-      semi: "off",
+      semi: "error",
       "prefer-const": "error",
       "prettier/prettier": [
         "error",
-        { semi: false, endOfLine: "auto", trailingComma: "es5" },
+        { semi: true, endOfLine: "auto", trailingComma: "es5" },
       ],
       // "import/named": "error", // 尚未支援 flat config
       "import/namespace": "error",

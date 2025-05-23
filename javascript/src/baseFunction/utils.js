@@ -117,7 +117,7 @@ export function emptyGuid() {
 
 /**
  * 此函數接受一個字符串，將其`編碼`為 base64 編碼字符串。
- * 
+ *
  * 這是對 window.btoa 的替代方案，因為 window.btoa 不能正確地`編碼` UTF-8 字符串。
  * @param {string} str - 要加密的字符串
  * @returns {Promise<string>} 一個解析為 base64 編碼字符串的 Promise
@@ -159,6 +159,6 @@ export async function btoaDecode(str) {
  * 等待指定的毫秒數後回傳 Promise。適合用來進行延遲操作。
  *
  * @param {number} ms - 休眠毫秒數
- * @returns {Promise<void>} 
+ * @returns {Promise<void>}
  */
 export const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
