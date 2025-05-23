@@ -1,0 +1,42 @@
+{
+  "name": "tima-lib",
+  "version": "1.0.0",
+  "description": "Javascript utils for tima only.",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint ./javascript/src",
+    "lint:fix": "eslint src --fix",
+    "build": "tsup src/index.js --dts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TiMa-Technology/Tima_Library.git"
+  },
+  "keywords": [
+    "tima",
+    "utils",
+    "date",
+    "format",
+    "browser"
+  ],
+  "author": "Tima Tech",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/TiMa-Technology/Tima_Library/issues"
+  },
+  "homepage": "https://github.com/TiMa-Technology/Tima_Library#readme",
+  "devDependencies": {
+    "@eslint/compat": "^1.2.9",
+    "@eslint/js": "^9.26.0",
+    "tsup": "^8.5.0",
+    "typescript": "^5.8.3",
+    "eslint": "^9.20.1",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-import-resolver-typescript": "^4.3.4",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-prettier": "^5.2.3",
+    "typescript-eslint": "^8.32.0"
+  }
+}
