@@ -5,7 +5,7 @@ import importPlugin from "eslint-plugin-import"
 import { fileURLToPath, URL } from "node:url"
 import { includeIgnoreFile } from "@eslint/compat"
 
-const gitignorePath = fileURLToPath(new URL("./.gitignore", import.meta.url))
+const gitignorePath = fileURLToPath(new URL("../.gitignore", import.meta.url))
 
 export default [
   includeIgnoreFile(gitignorePath),
