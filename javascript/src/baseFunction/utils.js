@@ -13,18 +13,18 @@ export function formatNumber(
   decimalSep = ".",
   thousandSep = ","
 ) {
-  const n = Math.abs(num)
-  const sign = num < 0 ? "-" : ""
-  const wholePart = parseInt(n.toFixed(decimalPlaces))
-  const wholeStr = String(wholePart)
-  const j = wholeStr.length > 3 ? wholeStr.length % 3 : 0
+  const n = Math.abs(num);
+  const sign = num < 0 ? "-" : "";
+  const wholePart = parseInt(n.toFixed(decimalPlaces));
+  const wholeStr = String(wholePart);
+  const j = wholeStr.length > 3 ? wholeStr.length % 3 : 0;
 
   const formattedWhole =
     (j ? wholeStr.substring(0, j) + thousandSep : "") +
-    wholeStr.substring(j).replace(/(\d{3})(?=\d)/g, "$1" + thousandSep)
+    wholeStr.substring(j).replace(/(\d{3})(?=\d)/g, "$1" + thousandSep);
 
-  const decimals = n.toFixed(decimalPlaces).slice(-decimalPlaces)
-  return sign + formattedWhole + (decimalPlaces ? decimalSep + decimals : "")
+  const decimals = n.toFixed(decimalPlaces).slice(-decimalPlaces);
+  return sign + formattedWhole + (decimalPlaces ? decimalSep + decimals : "");
 }
 
 /**
@@ -37,15 +37,15 @@ export function formatNumber(
  */
 export function padDecimals(num, count) {
   const rounded =
-    Math.round(parseFloat(num) * Math.pow(10, count)) / Math.pow(10, count)
-  const parts = rounded.toString().split(".")
+    Math.round(parseFloat(num) * Math.pow(10, count)) / Math.pow(10, count);
+  const parts = rounded.toString().split(".");
   if (parts.length === 1) {
-    return `${parts[0]}.${padLeft("", count, "0")}`
+    return `${parts[0]}.${padLeft("", count, "0")}`;
   }
   if (parts[1].length < count) {
-    return `${parts[0]}.${parts[1]}${padLeft("", count - parts[1].length, "0")}`
+    return `${parts[0]}.${parts[1]}${padLeft("", count - parts[1].length, "0")}`;
   }
-  return rounded.toString()
+  return rounded.toString();
 }
 
 /**
@@ -55,7 +55,7 @@ export function padDecimals(num, count) {
  * @example removeThousands("1,234,567") => "1234567"
  */
 export function removeThousands(str) {
-  return str.replaceAll(",", "")
+  return str.replaceAll(",", "");
 }
 
 /**
@@ -67,8 +67,8 @@ export function removeThousands(str) {
  * @example padLeft("123", 5, "0") => "00123"
  */
 export function padLeft(str, length, padChar) {
-  if (str.length >= length) return str
-  return padLeft(padChar + str, length, padChar)
+  if (str.length >= length) return str;
+  return padLeft(padChar + str, length, padChar);
 }
 
 /**
@@ -78,9 +78,9 @@ export function padLeft(str, length, padChar) {
  * @example addCommas(1234567.89) => "1,234,567.89"
  */
 export function addCommas(num) {
-  const parts = String(num).split(".")
-  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-  return parts.join(".")
+  const parts = String(num).split(".");
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return parts.join(".");
 }
 
 /**
@@ -91,7 +91,7 @@ export function addCommas(num) {
  * @example capitalize("javascript") => "Javascript"
  */
 export function capitalize(str) {
-  return str.charAt(0).toUpperCase() + str.slice(1)
+  return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 /**
@@ -101,9 +101,9 @@ export function capitalize(str) {
  */
 export function newGuid() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
-    const r = (Math.random() * 16) | 0
-    return (c === "x" ? r : (r & 0x3) | 0x8).toString(16)
-  })
+    const r = (Math.random() * 16) | 0;
+    return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
+  });
 }
 
 /**
@@ -112,7 +112,7 @@ export function newGuid() {
  * @example emptyGuid() => "00000000-0000-0000-0000-000000000000"
  */
 export function emptyGuid() {
-  return "00000000-0000-0000-0000-000000000000"
+  return "00000000-0000-0000-0000-000000000000";
 }
 
 /**
@@ -120,17 +120,18 @@ export function emptyGuid() {
  *
  * 這是對 window.btoa 的替代方案，因為 window.btoa 不能正確地`編碼` UTF-8 字符串。
  * @param {string} str - 要加密的字符串
+ * @param {string} [prefix="0x"] - 用於轉換十六進制字符的前綴，預設為 "0x"
  * @returns {Promise<string>} 一個解析為 base64 編碼字符串的 Promise
  * @example btoaEncode("Hello world!") => "SGVsbG8gd29ybGQh"
  * @example btoaEncode(JSON.stringify({ key: "value" })) => "eyJrZXkiOiJ2YWx1ZSJ9"
  * @see https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/btoa
  */
-export async function btoaEncode(str, secret = "0x") {
+export async function btoaEncode(str, prefix = "0x") {
   return btoa(
     encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function (match, p1) {
-      return String.fromCharCode("0x" + p1)
+      return String.fromCharCode(prefix + p1);
     })
-  )
+  );
 }
 
 /**
@@ -149,10 +150,10 @@ export async function btoaDecode(str) {
   return decodeURIComponent(
     Array.prototype.map
       .call(atob(str), function (c) {
-        return "%" + c.charCodeAt(0).toString(16).padStart(2, "0")
+        return "%" + c.charCodeAt(0).toString(16).padStart(2, "0");
       })
       .join("")
-  )
+  );
 }
 
 /**
@@ -161,4 +162,4 @@ export async function btoaDecode(str) {
  * @param {number} ms - 休眠毫秒數
  * @returns {Promise<void>}
  */
-export const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+export const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));

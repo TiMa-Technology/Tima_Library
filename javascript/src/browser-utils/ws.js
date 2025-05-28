@@ -29,20 +29,20 @@
  * wsClient.CreateWebSocket();
  */
 export class WebSocketClient {
-  ws_lockReconnect = false // 防止短時間內多次重連
-  ws_reConTime = 1000 // 初始 1 秒，指數回退
-  ws_maxReConTime = 30000 // 最大重連間隔 30 秒
-  ws_ws = null // WebSocket 物件
-  ws_webSocketURL = ""
-  ws_keyNo = ""
-  ws_role = ""
-  ws_clientIp = ""
-  ws_name = ""
-  ws_memNo = ""
-  ws_notifyClientCountRole = ""
-  ws_notifyClientAddCloseRole = ""
-  ws_mapNo = ""
-  ws_callBack = null
+  ws_lockReconnect = false; // 防止短時間內多次重連
+  ws_reConTime = 1000; // 初始 1 秒，指數回退
+  ws_maxReConTime = 30000; // 最大重連間隔 30 秒
+  ws_ws = null; // WebSocket 物件
+  ws_webSocketURL = "";
+  ws_keyNo = "";
+  ws_role = "";
+  ws_clientIp = "";
+  ws_name = "";
+  ws_memNo = "";
+  ws_notifyClientCountRole = "";
+  ws_notifyClientAddCloseRole = "";
+  ws_mapNo = "";
+  ws_callBack = null;
 
   /**
    * @description 創建 WebSocket 連線。
@@ -62,7 +62,7 @@ export class WebSocketClient {
    * wsClient.CreateWebSocket();
    */
   constructor(options = {}) {
-    Object.assign(this, options)
+    Object.assign(this, options);
   }
 
   /**
@@ -71,7 +71,7 @@ export class WebSocketClient {
    *  await wsClient.CreateWebSocket();
    */
   async CreateWebSocket() {
-    if (!this.ws_webSocketURL) return
+    if (!this.ws_webSocketURL) return;
     try {
       if ("WebSocket" in window) {
         this.ws_ws = new WebSocket(
@@ -88,12 +88,12 @@ export class WebSocketClient {
           )}&notifyclientaddcloserole=${encodeURIComponent(
             this.ws_notifyClientAddCloseRole
           )}${this.ws_mapNo ? `&mapno=${this.ws_mapNo}` : ""}`
-        )
-        this.InitWebSocketEventHandle()
+        );
+        this.InitWebSocketEventHandle();
       }
     } catch (e) {
-      await this.ReConnectWebSocket()
-      console.log("WebSocket 建立連線發生錯誤: ", e)
+      await this.ReConnectWebSocket();
+      console.log("WebSocket 建立連線發生錯誤: ", e);
     }
   }
 
@@ -103,14 +103,14 @@ export class WebSocketClient {
    *  await wsClient.ReConnectWebSocket();
    */
   async ReConnectWebSocket() {
-    if (this.ws_lockReconnect || !this.ws_webSocketURL) return
-    this.ws_lockReconnect = true
+    if (this.ws_lockReconnect || !this.ws_webSocketURL) return;
+    this.ws_lockReconnect = true;
     setTimeout(async () => {
-      console.log("WebSocket 重新連線")
-      await this.CreateWebSocket()
-      this.ws_reConTime = Math.min(this.ws_reConTime * 2, this.ws_maxReConTime) // 指數回退
-      this.ws_lockReconnect = false
-    }, this.ws_reConTime)
+      console.log("WebSocket 重新連線");
+      await this.CreateWebSocket();
+      this.ws_reConTime = Math.min(this.ws_reConTime * 2, this.ws_maxReConTime); // 指數回退
+      this.ws_lockReconnect = false;
+    }, this.ws_reConTime);
   }
 
   /**
@@ -120,28 +120,28 @@ export class WebSocketClient {
    */
   InitWebSocketEventHandle() {
     this.ws_ws.onopen = () => {
-      heartCheck.reset().start()
-      this.ws_reConTime = 1000 // 連線成功後重置重連時間
-      console.log("WebSocket 連線成功")
-    }
+      heartCheck.reset().start();
+      this.ws_reConTime = 1000; // 連線成功後重置重連時間
+      console.log("WebSocket 連線成功");
+    };
     this.ws_ws.onclose = async () => {
-      console.log("WebSocket 斷開")
-      await this.ReConnectWebSocket()
-    }
+      console.log("WebSocket 斷開");
+      await this.ReConnectWebSocket();
+    };
     this.ws_ws.onmessage = (e) => {
-      heartCheck.reset().start()
-      let msg = JSON.parse(e.data)
+      heartCheck.reset().start();
+      const msg = JSON.parse(e.data);
       if (
         msg.TypeCode !== "Pong" &&
         msg.TypeCode !== "Error" &&
         this.ws_callBack
       ) {
-        this.ws_callBack(msg)
+        this.ws_callBack(msg);
       }
-    }
+    };
     this.ws_ws.onerror = () => {
-      console.log("WebSocket 發生錯誤")
-    }
+      console.log("WebSocket 發生錯誤");
+    };
   }
 }
 
@@ -156,19 +156,19 @@ export const heartCheck = {
    * @description 重置心跳計時器。
    */
   reset() {
-    clearTimeout(this.timeoutObj)
-    clearTimeout(this.serverTimeoutObj)
-    return this
+    clearTimeout(this.timeoutObj);
+    clearTimeout(this.serverTimeoutObj);
+    return this;
   },
   /**
    * @description 啟動心跳檢測。
    */
   start() {
     this.timeoutObj = setTimeout(() => {
-      WebSocketClient.prototype.SendContent("{'TypeCode': 'Ping'}")
+      WebSocketClient.prototype.SendContent("{'TypeCode': 'Ping'}");
       this.serverTimeoutObj = setTimeout(() => {
-        WebSocketClient.prototype.SetClose()
-      }, this.timeout)
-    }, this.timeout)
+        WebSocketClient.prototype.SetClose();
+      }, this.timeout);
+    }, this.timeout);
   },
-}
+};
