@@ -1,36 +1,35 @@
 /**
- * 進行頁面跳轉。
- * @param {string} url - 目標網址。
- * @param {Object} [options] - 跳轉選項。
- * @param {number} [options.delay=0] - 延遲跳轉的毫秒數。
- * @param {boolean} [options.newTab=false] - 是否在新視窗開啟。
- * @param {boolean} [options.replace=false] - 是否使用 location.replace()，不保留瀏覽紀錄。
+ * 重新導向到站內路徑（path-only）
+ * @param {string} path - 站內路徑，例如 "/dashboard"
+ * @param {Object} options - 額外選項
+ * @param {number} [options.delay=0] - 延遲毫秒數
+ * @param {boolean} [options.newTab=false] - 是否開啟新分頁（相對路徑會以完整 URL 開啟）
+ * @param {boolean} [options.replace=false] - 是否使用 replace 模式導向
  * @example
- * redirect("https://www.google.com");
- * redirect("https://www.google.com", { delay: 1000 });
- * redirect("https://www.google.com", { newTab: true });
- * redirect("/login", { replace: true });
+ * redirect("/default");
+ * redirect("/dashboard", { delay: 1000, newTab: true, replace: false });
  */
-export function redirect(url, options = {}) {
-  if (typeof url !== "string" || url.trim() === "") {
-    console.error("redirect: 無效的 URL。");
+export function redirect(path, options = {}) {
+  if (typeof path !== "string" || !path.startsWith("/")) {
+    console.error("redirect: 請提供有效的站內路徑（需以 / 開頭）");
     return;
   }
-
+  // default options
   const { delay = 0, newTab = false, replace = false } = options;
 
   const doRedirect = () => {
+    const fullUrl = window.location.origin + path;
     if (newTab) {
-      window.open(url, "_blank");
+      window.open(fullUrl, "_blank");
     } else if (replace) {
-      window.location.replace(url);
+      window.location.replace(path);
     } else {
-      window.location.href = url;
+      window.location.href = path;
     }
   };
 
   if (delay > 0) {
-    setTimeout(doRedirect, delay);
+    window.setTimeout(doRedirect, delay);
   } else {
     doRedirect();
   }
