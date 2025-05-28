@@ -1,12 +1,19 @@
 {
   "compilerOptions": {
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    },   
     "allowJs": true,
     "declaration": true,
     "emitDeclarationOnly": true,
     "outDir": "dist",
     "target": "ESNext",
     "module": "ESNext",
-    "esModuleInterop": true
+    "strict": true, 
+    "esModuleInterop": true,
+    "skipLibCheck": true 
   },
-  "include": ["src"]
+  "include": ["src/**/*"],
 }

@@ -1,4 +1,4 @@
-import { emptyGuid } from "./utils"
+import { emptyGuid } from "./utils";
 /**
  * 驗證 MAC 地址格式
  * @param {string} address - 要驗證的 MAC 地址
@@ -8,8 +8,8 @@ import { emptyGuid } from "./utils"
  */
 export function isValidMac(address) {
   const reg =
-    /^[A-Fa-f\d]{2}:[A-Fa-f\d]{2}:[A-Fa-f\d]{2}:[A-Fa-f\d]{2}:[A-Fa-f\d]{2}:[A-Fa-f\d]{2}$/
-  return reg.test(address)
+    /^[A-Fa-f\d]{2}:[A-Fa-f\d]{2}:[A-Fa-f\d]{2}:[A-Fa-f\d]{2}:[A-Fa-f\d]{2}:[A-Fa-f\d]{2}$/;
+  return reg.test(address);
 }
 
 /**
@@ -22,7 +22,7 @@ export function isValidMac(address) {
 export function isValidIPv4(address) {
   return /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(
     address
-  )
+  );
 }
 
 /**
@@ -36,7 +36,7 @@ export function isValidIPv4(address) {
  * @example isNumberString("123a45") => false
  */
 export function isNumberString(str) {
-  return /^[0-9]+$/.test(str)
+  return /^[0-9]+$/.test(str);
 }
 
 /**
@@ -47,9 +47,9 @@ export function isNumberString(str) {
  * @example isEmail("test@.com") => false
  */
 export function isEmail(email) {
-  return /^([a-zA-Z0-9_\.\-\+])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/.test(
+  return /^([a-zA-Z0-9_.\-+])+@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/.test(
     email
-  )
+  );
 }
 
 /**
@@ -65,25 +65,25 @@ export function isEmail(email) {
  */
 export function isValidDate(dateString) {
   if (!dateString || dateString === "0001-01-01T00:00:00") {
-    return false
+    return false;
   }
 
-  const regex = /^(\d{4})[-\/](\d{2})[-\/](\d{2})/
-  const match = dateString.match(regex)
+  const regex = /^(\d{4})[-/](\d{2})[-/](\d{2})/;
+  const match = dateString.match(regex);
 
   if (!match) {
-    return false
+    return false;
   }
 
-  const [_, year, month, day] = match.map(Number)
+  const [_, year, month, day] = match.map(Number);
 
-  const date = new Date(year, month - 1, day)
+  const date = new Date(year, month - 1, day);
   return (
     !isNaN(date.getTime()) &&
     date.getFullYear() === year &&
     date.getMonth() === month - 1 &&
     date.getDate() === day
-  )
+  );
 }
 
 /** 檢查是否為空的 GUID
@@ -93,6 +93,6 @@ export function isValidDate(dateString) {
  * @example isEmptyGuid("123e4567-e89b-12d3-a456-426614174000") => false
  */
 export function isEmptyGuid(id) {
-  const emptyId = emptyGuid()
-  return id === emptyGuid
+  const emptyId = emptyGuid();
+  return id === emptyId;
 }

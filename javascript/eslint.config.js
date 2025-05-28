@@ -4,7 +4,7 @@ import prettierPlugin from "eslint-plugin-prettier"
 import importPlugin from "eslint-plugin-import"
 import { fileURLToPath, URL } from "node:url"
 import { includeIgnoreFile } from "@eslint/compat"
-import { error } from "node:console"
+import globals from "globals";
 
 const gitignorePath = fileURLToPath(new URL("../.gitignore", import.meta.url))
 
@@ -26,6 +26,10 @@ export default [
       ecmaVersion: "latest",
       sourceType: "module",
       parser: tseslint.parser,
+      globals: {
+        ...tseslint.configs.recommended[0].languageOptions.globals,
+        ...globals.browser,
+      },
     },
     settings: {
       "import/resolver": {
@@ -70,4 +74,4 @@ export default [
       ],
     },
   },
-]
+];

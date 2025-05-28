@@ -30,13 +30,17 @@
   "devDependencies": {
     "@eslint/compat": "^1.2.9",
     "@eslint/js": "^9.26.0",
-    "tsup": "^8.5.0",
-    "typescript": "^5.8.3",
     "eslint": "^9.20.1",
     "eslint-config-prettier": "^10.0.1",
     "eslint-import-resolver-typescript": "^4.3.4",
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-prettier": "^5.2.3",
+    "prettier": "^3.5.3",
+    "tsup": "^8.5.0",
+    "typescript": "^5.8.3",
     "typescript-eslint": "^8.32.0"
+  },
+  "dependencies": {
+    "jquery": "^3.7.1"
   }
 }
