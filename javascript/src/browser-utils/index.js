@@ -1,6 +1,5 @@
 /**
  * 進行頁面跳轉。
- *
  * @param {string} url - 目標網址。
  * @param {Object} [options] - 跳轉選項。
  * @param {number} [options.delay=0] - 延遲跳轉的毫秒數。
@@ -18,7 +17,11 @@ export function redirect(url, options = {}) {
     return;
   }
 
-  const { delay = 0, newTab = false, replace = false } = options;
+  const {
+    delay = 0,
+    newTab = false,
+    replace = false,
+  } = options;
 
   const doRedirect = () => {
     if (newTab) {
@@ -37,6 +40,7 @@ export function redirect(url, options = {}) {
   }
 }
 
+
 /**
  * 返回上一頁。
  * @example
@@ -44,36 +48,4 @@ export function redirect(url, options = {}) {
  */
 export function goBack() {
   window.history.back();
-}
-
-/**
- * 獲取 URL 參數 QueryString 的 key
- * @param {string} key - 參數名稱
- * @returns {string} 參數值
- * @example
- * // https://www.google.com?key=value
- * getQueryParam("key") // value
- */
-export function getQueryParam(key) {
-  return new URLSearchParams(window.location.search).get(key);
-}
-
-/**
- * 移除 URL 中的指定參數。
- * @param {string} url - 目標網址。
- * @param {string} name - 要移除的參數名稱。
- * @returns {string} 移除參數後的網址。
- * @example
- * // https://www.google.com?key=value&name=test
- * removeUrlParam("https://www.google.com?key=value&name=test", "name") // "https://www.google.com?key=value"
- */
-export function removeUrlParam(url, name) {
-  const [base, queryString] = url.split("?");
-  if (!queryString) return url;
-
-  const params = new URLSearchParams(queryString);
-  params.delete(name);
-
-  const newQuery = params.toString();
-  return newQuery ? `${base}?${newQuery}` : base;
 }
