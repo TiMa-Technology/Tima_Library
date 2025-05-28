@@ -17,11 +17,7 @@ export function redirect(url, options = {}) {
     return;
   }
 
-  const {
-    delay = 0,
-    newTab = false,
-    replace = false,
-  } = options;
+  const { delay = 0, newTab = false, replace = false } = options;
 
   const doRedirect = () => {
     if (newTab) {
@@ -39,7 +35,6 @@ export function redirect(url, options = {}) {
     doRedirect();
   }
 }
-
 
 /**
  * 返回上一頁。
