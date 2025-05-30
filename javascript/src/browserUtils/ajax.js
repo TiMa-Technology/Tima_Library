@@ -1,7 +1,7 @@
 "use strict";
 
 import { emptyGuid } from "../baseFunction/utils.js";
-import { redirect } from "./index.js";
+import { redirect } from "./navigation.js";
 import * as $ from "jquery";
 
 /**
