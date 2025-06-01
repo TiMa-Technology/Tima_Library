@@ -2,7 +2,11 @@
   "name": "tima-lib",
   "version": "1.0.0",
   "description": "Javascript utils for tima only.",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "type": "module",
   "scripts": {
     "lint": "eslint src",
@@ -32,6 +36,8 @@
   "devDependencies": {
     "@eslint/compat": "^1.2.9",
     "@eslint/js": "^9.26.0",
+    "@types/jquery": "^3.5.32",
+    "@types/node": "^22.15.29",
     "eslint": "^9.20.1",
     "eslint-config-prettier": "^10.0.1",
     "eslint-import-resolver-typescript": "^4.3.4",
