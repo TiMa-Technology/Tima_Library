@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { redirect, goBack } from "../index";
+import { redirect, goBack } from "../navigation";
 
 // 模擬 window 物件
 const mockWindow = {
