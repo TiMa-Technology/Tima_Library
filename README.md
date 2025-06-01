@@ -136,7 +136,7 @@
 
 ### 文件工具
 - **Markdown 編輯器**：使用 VS Code 或 Typora 撰寫 Markdown。
-- **JSDoc (JavaScript)**：通過 `npm install jsdoc` 安裝。
+- **JSDoc (JavaScript)**：Node.js 內建。
 - **DocFX (C#)**：通過 `dotnet tool install -g docfx` 安裝。
 - **檢查工具**：使用 `markdownlint` 檢查 Markdown，使用 `dotnet format` 檢查 C# 程式碼風格。
 
