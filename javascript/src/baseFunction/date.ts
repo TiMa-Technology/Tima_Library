@@ -1,12 +1,15 @@
 /**
  * 將日期格式化為西元日期字符串 (YYYY/MM/DD)
- * @param {Date|string} date - 要格式化的日期
+ * @param {Date | string} date - 要格式化的日期
  * @param {string} [separator="/"] - 分隔符號
  * @returns {string} 格式化後的日期字符串
  * @example formatDate(new Date()) => "2023/10/05"
  * @example formatDate(new Date(), ".") => "2023.10.05"
  */
-export function formatDate(date, separator = "/") {
+export function formatDate(
+  date: Date | string,
+  separator: string = "/"
+): string {
   const d = new Date(date);
   const yyyy = d.getFullYear();
   const mm = (d.getMonth() + 1).toString().padStart(2, "0");
@@ -16,13 +19,16 @@ export function formatDate(date, separator = "/") {
 
 /**
  * 將日期格式化為西元日期時間字符串 (YYYY/MM/DD HH:mm)
- * @param {Date|string} date - 要格式化的日期
+ * @param {Date | string} date - 要格式化的日期
  * @param {string} [separator="/"] - 分隔符號
  * @returns {string} 格式化後的日期時間字符串
  * @example formatDateTime(new Date()) => "2023/10/05 14:30"
  * @example formatDateTime(new Date(), ".") => "2023.10.05 14:30"
  */
-export function formatDateTime(date, separator = "/") {
+export function formatDateTime(
+  date: Date | string,
+  separator: string = "/"
+): string {
   const d = new Date(date);
   const yyyy = d.getFullYear();
   const mm = (d.getMonth() + 1).toString().padStart(2, "0");
@@ -36,13 +42,16 @@ export function formatDateTime(date, separator = "/") {
 
 /**
  * 將日期格式化為帶秒的西元日期時間字符串 (YYYY/MM/DD HH:mm:ss)
- * @param {Date|string} date - 要格式化的日期
+ * @param {Date | string} date - 要格式化的日期
  * @param {string} [separator="/"] - 分隔符號
  * @returns {string} 格式化後的帶秒的日期時間字符串
  * @example formatDateTimeWithSeconds(new Date()) => "2023/10/05 14:30:45"
  * @example formatDateTimeWithSeconds(new Date(), ".") => "2023.10.05 14:30:45"
  */
-export function formatDateTimeWithSeconds(date, separator = "/") {
+export function formatDateTimeWithSeconds(
+  date: Date | string,
+  separator: string = "/"
+): string {
   const d = new Date(date);
   const yyyy = d.getFullYear();
   const mm = (d.getMonth() + 1).toString().padStart(2, "0");
@@ -57,13 +66,16 @@ export function formatDateTimeWithSeconds(date, separator = "/") {
 
 /**
  * 將日期格式化為民國曆日期 (YYY/MM/DD)
- * @param {Date|string} date - 要格式化的日期
+ * @param {Date | string} date - 要格式化的日期
  * @param {string} [separator="/"] - 分隔符號
  * @returns {string} 格式化後的民國曆日期
  * @example formatROCDate(new Date()) => "112/10/05"
  * @example formatROCDate(new Date(), ".") => "112.10.05"
  */
-export function formatROCDate(date, separator = "/") {
+export function formatROCDate(
+  date: Date | string,
+  separator: string = "/"
+): string {
   const d = new Date(date);
   const yyyy = d.getFullYear() - 1911;
   const mm = (d.getMonth() + 1).toString().padStart(2, "0");
@@ -76,9 +88,12 @@ export function formatROCDate(date, separator = "/") {
  * @param {string} rocDate - 民國曆日期 (YYY/MM/DD)
  * @param {string} [separator="/"] - 分隔符號
  * @returns {string} 西元日期 (YYYY/MM/DD)
- * @example convertROCToGregorian("112/10/05") => "2023/10/05"
+ * @example formatROCToGregorian("112/10/05") => "2023/10/05"
  */
-export function formatROCToGregorian(rocDate, separator = "/") {
+export function formatROCToGregorian(
+  rocDate: string,
+  separator: string = "/"
+): string {
   if (!rocDate) return "";
   const [y, m, d] = rocDate.split("/");
   const gregorianYear = parseInt(y) + 1911;
@@ -93,7 +108,7 @@ export function formatROCToGregorian(rocDate, separator = "/") {
  * @returns {Date} 修改後的日期
  * @example addDays(new Date(), 5) => Date object representing 5 days later
  */
-export function addDays(date, days) {
+export function addDays(date: Date, days: number): Date {
   const newDate = new Date(date);
   newDate.setDate(newDate.getDate() + days);
   return newDate;
@@ -109,10 +124,13 @@ export function addDays(date, days) {
  * @example
  * formatDateWeekTime('2024-02-20T10:30:00', ".") // '2024.02.20(二) 10:30'
  */
-export function formatDateWeekTime(dateString, separator = "/") {
+export function formatDateWeekTime(
+  dateString: string,
+  separator: string = "/"
+): string {
   const d = new Date(dateString);
   if (d.getFullYear() === 1) return "";
-  const dayList = ["日", "一", "二", "三", "四", "五", "六"];
+  const dayList: string[] = ["日", "一", "二", "三", "四", "五", "六"];
   return `${d.getFullYear()}${separator}${String(d.getMonth() + 1).padStart(
     2,
     "0"
@@ -131,9 +149,9 @@ export function formatDateWeekTime(dateString, separator = "/") {
  * @example
  * formatChWeek('2024-02-20') // '星期二'
  */
-export function formatChWeek(dateString) {
+export function formatChWeek(dateString: string): string {
   const d = new Date(dateString);
-  const dayList = ["日", "一", "二", "三", "四", "五", "六"];
+  const dayList: string[] = ["日", "一", "二", "三", "四", "五", "六"];
   return `星期${dayList[d.getDay()]}`;
 }
 
@@ -144,7 +162,7 @@ export function formatChWeek(dateString) {
  * @example
  * formatTime('2024-02-20T10:30:00') // '10:30'
  */
-export function formatTime(dateString) {
+export function formatTime(dateString: string): string {
   const d = new Date(dateString);
   return `${String(d.getHours()).padStart(2, "0")}:${String(
     d.getMinutes()
@@ -156,9 +174,9 @@ export function formatTime(dateString) {
  * @param {string} dateString - 可解析為日期的字串
  * @returns {string} 格式化後的時間字串
  * @example
- * formatTimeSec('2024-02-20T10:30:45') // '10:30:45'
+ * formatTimeWithSec('2024-02-20T10:30:45') // '10:30:45'
  */
-export function formatTimeWithSec(dateString) {
+export function formatTimeWithSec(dateString: string): string {
   const d = new Date(dateString);
   return `${String(d.getHours()).padStart(2, "0")}:${String(
     d.getMinutes()
@@ -168,11 +186,11 @@ export function formatTimeWithSec(dateString) {
 /**
  * 格式化西元年 yyyy
  * @param {string} dateString - 可解析為日期的字串
- * @returns {string|number} 西元年
+ * @returns {string | number} 西元年
  * @example
  * formatYear('2024-02-20') // 2024
  */
-export function formatYear(dateString) {
+export function formatYear(dateString: string): string | number {
   const d = new Date(dateString);
   return d.getFullYear() === 1 ? "" : d.getFullYear();
 }
@@ -180,11 +198,11 @@ export function formatYear(dateString) {
 /**
  * 格式化民國年 yyy
  * @param {string} dateString - 可解析為日期的字串
- * @returns {string|number} 民國年
+ * @returns {string | number} 民國年
  * @example
  * formatChYear('2024-02-20') // 113
  */
-export function formatChYear(dateString) {
+export function formatChYear(dateString: string): string | number {
   const d = new Date(dateString);
   return d.getFullYear() - 1911 <= 1 ? "" : d.getFullYear() - 1911;
 }
@@ -196,7 +214,7 @@ export function formatChYear(dateString) {
  * @example
  * formatMonth('2024-02-20') // '2月'
  */
-export function formatMonth(dateString) {
+export function formatMonth(dateString: string): string {
   const d = new Date(dateString);
   return d.getFullYear() === 1 ? "" : `${d.getMonth() + 1}月`;
 }
@@ -208,7 +226,7 @@ export function formatMonth(dateString) {
  * @example
  * formatDay('2024-02-20') // '20'
  */
-export function formatDay(dateString) {
+export function formatDay(dateString: string): string {
   const d = new Date(dateString);
   return d.getFullYear() === 1 ? "" : String(d.getDate()).padStart(2, "0");
 }

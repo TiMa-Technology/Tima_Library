@@ -61,9 +61,9 @@ export interface ApiError extends Error {
  */
 export class ApiSecurityHelper {
   /** 從環境變數取得帳號，應從 .env 載入 */
-  static appAccount: string = (window as any).APP_ACCOUNT || "";
+  static appAccount: string = (globalThis as any).APP_ACCOUNT || "";
   /** 從環境變數取得密碼，應從 .env 載入 */
-  static appPassword: string = (window as any).APP_PASSWORD || "";
+  static appPassword: string = (globalThis as any).APP_PASSWORD || "";
 
   /**
    * 使用應用帳號登入取得 token
@@ -659,7 +659,7 @@ async function executeQuery(
 
       if (attempt < maxAttempts && !error.isApiError) {
         const delay = config.retryDelay?.(attempt - 1) ?? 1000;
-        await new Promise((resolve) => setTimeout(resolve, delay));
+        await new Promise((resolve) => window.setTimeout(resolve, delay));
         continue;
       }
 
@@ -710,7 +710,7 @@ export async function ajaxApi({
 
       if (attempt < maxAttempts && !error.isApiError) {
         const delay = finalConfig.retryDelay(attempt - 1);
-        await new Promise((resolve) => setTimeout(resolve, delay));
+        await new Promise((resolve) => window.setTimeout(resolve, delay));
         continue;
       }
 
@@ -854,6 +854,6 @@ export function handleApiError(error: unknown): {
 }
 
 // 定期清理過期快取
-setInterval(() => {
+window.setInterval(() => {
   apiStateManager.cleanExpiredCache();
 }, 60000);
