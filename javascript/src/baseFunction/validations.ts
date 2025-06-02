@@ -6,7 +6,7 @@ import { emptyGuid } from "./utils";
  * @example isValidMac("00:1A:2B:3C:4D:5E") => true
  * @example isValidMac("001A:2B:3C:4D:5E") => false
  */
-export function isValidMac(address) {
+export function isValidMac(address: string): boolean {
   const reg =
     /^[A-Fa-f\d]{2}:[A-Fa-f\d]{2}:[A-Fa-f\d]{2}:[A-Fa-f\d]{2}:[A-Fa-f\d]{2}:[A-Fa-f\d]{2}$/;
   return reg.test(address);
@@ -19,7 +19,7 @@ export function isValidMac(address) {
  * @example isValidIPv4("192.168.0.1") => true
  * @example isValidIPv4("256.256.256.256") => false
  */
-export function isValidIPv4(address) {
+export function isValidIPv4(address: string): boolean {
   return /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(
     address
   );
@@ -35,7 +35,7 @@ export function isValidIPv4(address) {
  * @example isNumberString("12345") => true
  * @example isNumberString("123a45") => false
  */
-export function isNumberString(str) {
+export function isNumberString(str: string): boolean {
   return /^[0-9]+$/.test(str);
 }
 
@@ -46,7 +46,7 @@ export function isNumberString(str) {
  * @example isEmail("test@example.com") => true
  * @example isEmail("test@.com") => false
  */
-export function isEmail(email) {
+export function isEmail(email: string): boolean {
   return /^([a-zA-Z0-9_.\-+])+@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/.test(
     email
   );
@@ -63,7 +63,7 @@ export function isEmail(email) {
  * @example isValidDate("2023/10/05") => true
  * @example isValidDate("2023-13-05") => false
  */
-export function isValidDate(dateString) {
+export function isValidDate(dateString: string): boolean {
   if (!dateString || dateString === "0001-01-01T00:00:00") {
     return false;
   }
@@ -92,7 +92,7 @@ export function isValidDate(dateString) {
  * @example isEmptyGuid("00000000-0000-0000-0000-000000000000") => true
  * @example isEmptyGuid("123e4567-e89b-12d3-a456-426614174000") => false
  */
-export function isEmptyGuid(id) {
+export function isEmptyGuid(id: string): boolean {
   const emptyId = emptyGuid();
   return id === emptyId;
 }

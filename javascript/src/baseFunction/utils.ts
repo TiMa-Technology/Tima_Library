@@ -8,11 +8,11 @@
  * @example formatNumber(1234567.89) => "1,234,567.89"
  */
 export function formatNumber(
-  num,
-  decimalPlaces = 2,
-  decimalSep = ".",
-  thousandSep = ","
-) {
+  num: number,
+  decimalPlaces: number = 2,
+  decimalSep: string = ".",
+  thousandSep: string = ","
+): string {
   const n = Math.abs(num);
   const sign = num < 0 ? "-" : "";
   const wholePart = parseInt(n.toFixed(decimalPlaces));
@@ -35,9 +35,10 @@ export function formatNumber(
  * @example padDecimals(123.4, 3) => "123.400"
  * @example padDecimals(123, 2) => "123.00"
  */
-export function padDecimals(num, count) {
+export function padDecimals(num: number, count: number): string {
   const rounded =
-    Math.round(parseFloat(num) * Math.pow(10, count)) / Math.pow(10, count);
+    Math.round(parseFloat(num.toString()) * Math.pow(10, count)) /
+    Math.pow(10, count);
   const parts = rounded.toString().split(".");
   if (parts.length === 1) {
     return `${parts[0]}.${padLeft("", count, "0")}`;
@@ -54,7 +55,7 @@ export function padDecimals(num, count) {
  * @returns {string} 移除千位分隔符後的字符串
  * @example removeThousands("1,234,567") => "1234567"
  */
-export function removeThousands(str) {
+export function removeThousands(str: string): string {
   return str.replaceAll(",", "");
 }
 
@@ -66,7 +67,7 @@ export function removeThousands(str) {
  * @returns {string} 填充後的字符串
  * @example padLeft("123", 5, "0") => "00123"
  */
-export function padLeft(str, length, padChar) {
+export function padLeft(str: string, length: number, padChar: string): string {
   if (str.length >= length) return str;
   return padLeft(padChar + str, length, padChar);
 }
@@ -77,7 +78,7 @@ export function padLeft(str, length, padChar) {
  * @returns {string} 格式化後帶逗號的數字字符串
  * @example addCommas(1234567.89) => "1,234,567.89"
  */
-export function addCommas(num) {
+export function addCommas(num: string | number): string {
   const parts = String(num).split(".");
   parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   return parts.join(".");
@@ -90,7 +91,7 @@ export function addCommas(num) {
  * @example capitalize("hello world") => "Hello world"
  * @example capitalize("javascript") => "Javascript"
  */
-export function capitalize(str) {
+export function capitalize(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
@@ -99,7 +100,7 @@ export function capitalize(str) {
  * @returns {string} 新的 GUID
  * @example newGuid() => "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"
  */
-export function newGuid() {
+export function newGuid(): string {
   return crypto.randomUUID();
 }
 
@@ -108,7 +109,7 @@ export function newGuid() {
  * @returns {string} 空的 GUID
  * @example emptyGuid() => "00000000-0000-0000-0000-000000000000"
  */
-export function emptyGuid() {
+export function emptyGuid(): string {
   return "00000000-0000-0000-0000-000000000000";
 }
 
@@ -123,10 +124,10 @@ export function emptyGuid() {
  * @example btoaEncode(JSON.stringify({ key: "value" })) => "eyJrZXkiOiJ2YWx1ZSJ9"
  * @see https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/btoa
  */
-export async function btoaEncode(str, prefix = "0x") {
+export function btoaEncode(str: string, prefix: string = "0x"): string {
   return btoa(
     encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function (match, p1) {
-      return String.fromCharCode(prefix + p1);
+      return String.fromCharCode(parseInt(prefix + p1));
     })
   );
 }
@@ -143,7 +144,7 @@ export async function btoaEncode(str, prefix = "0x") {
  * @example btoaDecode("eyJrZXkiOiJ2YWx1ZSJ9") => '{"key":"value"}'
  * @see https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/at
  */
-export async function btoaDecode(str) {
+export async function btoaDecode(str: string): Promise<string> {
   return decodeURIComponent(
     Array.prototype.map
       .call(atob(str), function (c) {
@@ -159,4 +160,5 @@ export async function btoaDecode(str) {
  * @param {number} ms - 休眠毫秒數
  * @returns {Promise<void>}
  */
-export const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+export const sleep = (ms: number): Promise<void> =>
+  new Promise((resolve) => setTimeout(resolve, ms));
