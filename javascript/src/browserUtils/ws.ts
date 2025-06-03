@@ -20,8 +20,8 @@ export enum WebSocketState {
  * WebSocket 訊息類型
  */
 export interface WebSocketMessage {
-  TypeCode: string;
-  [key: string]: any;
+  type: string;
+  [key: string]: string;
 }
 
 /**
@@ -235,7 +235,7 @@ export class WebSocketClient {
 
       // Send login message
       const loginMessage: WebSocketMessage = {
-        TypeCode: "Login",
+        type: "Login",
         name: this.options.name,
         memNo: this.options.memNo,
         notifyClientCountRole: this.options.notifyClientCountRole,
@@ -278,7 +278,7 @@ export class WebSocketClient {
           return;
         }
 
-        if (message.TypeCode !== "Error") {
+        if (message.type !== "Error") {
           this.options.callBack?.(message);
           this.eventHandlers.onMessage?.(message);
         }
@@ -350,7 +350,7 @@ export class WebSocketClient {
    */
   private sendHeartbeat(): void {
     if (this.isConnected()) {
-      this.send({ TypeCode: "Ping" });
+      this.send({ type: "Ping", TypeCode: "Ping" });
 
       // 設置心跳超時檢查
       this.heartbeatTimeoutTimer = setTimeout(() => {
@@ -451,7 +451,7 @@ wsClient.setEventHandlers({
 await wsClient.connect();
 
 // 發送訊息
-wsClient.send({ TypeCode: 'Message', content: 'Hello World' });
+wsClient.send({ type: 'Message', content: 'Hello World' });
 
 // 關閉連線
 wsClient.disconnect();
