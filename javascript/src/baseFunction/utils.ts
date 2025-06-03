@@ -140,11 +140,11 @@ export function btoaEncode(str: string, prefix: string = "0x"): string {
  *
  * @param {string} str - 要解密的 base64 編碼字符串。
  * @returns {Promise<string>} 一個解析為解密字符串的 Promise。
- * @example btoaDecode("SGVsbG8gd29ybGQh") => "Hello world!"
- * @example btoaDecode("eyJrZXkiOiJ2YWx1ZSJ9") => '{"key":"value"}'
+ * @example atobDecode("SGVsbG8gd29ybGQh") => "Hello world!"
+ * @example atobDecode("eyJrZXkiOiJ2YWx1ZSJ9") => '{"key":"value"}'
  * @see https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/at
  */
-export async function btoaDecode(str: string): Promise<string> {
+export async function atobDecode(str: string): Promise<string> {
   return decodeURIComponent(
     Array.prototype.map
       .call(atob(str), function (c) {
