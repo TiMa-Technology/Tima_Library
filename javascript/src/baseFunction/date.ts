@@ -84,6 +84,30 @@ export function formatROCDate(
 }
 
 /**
+ * 將日期格式化為民國曆日期時間 (YYY/MM/DD HH:mm:ss)
+ * @param {Date|string} date - 要格式化的日期
+ * @param {string} [separator="/"] - 分隔符號
+ * @returns {string} 格式化後的民國曆日期時間
+ * @example formatROCDateTimeWithSeconds(new Date()) => "112/10/05 01:02:03"
+ * @example formatROCDateTimeWithSeconds(new Date(), ".") => "112.10.05 01:02:03"
+ */
+export function formatROCDateTimeWithSeconds(
+  date: string,
+  separator: string = "/"
+): string {
+  const d = new Date(date);
+  const rocYear = d.getFullYear() - 1911;
+  if (rocYear <= 1) return "";
+  const mm = (d.getMonth() + 1).toString().padStart(2, "0");
+  const dd = d.getDate().toString().padStart(2, "0");
+  const hh = d.getHours().toString().padStart(2, "0");
+  const min = d.getMinutes().toString().padStart(2, "0");
+  const ss = d.getSeconds().toString().padStart(2, "0");
+
+  return `${rocYear}${separator}${mm}${separator}${dd} ${hh}:${min}:${ss}`;
+}
+
+/**
  * 將民國曆日期轉換為西元日期
  * @param {string} rocDate - 民國曆日期 (YYY/MM/DD)
  * @param {string} [separator="/"] - 分隔符號
