@@ -112,9 +112,9 @@ export function formatROCDateTimeWithSeconds(
  * @param {string} rocDate - 民國曆日期 (YYY/MM/DD)
  * @param {string} [separator="/"] - 分隔符號
  * @returns {string} 西元日期 (YYYY/MM/DD)
- * @example formatROCToGregorian("112/10/05") => "2023/10/05"
+ * @example convertROCToGregorian("112/10/05") => "2023/10/05"
  */
-export function formatROCToGregorian(
+export function convertROCToGregorian(
   rocDate: string,
   separator: string = "/"
 ): string {
