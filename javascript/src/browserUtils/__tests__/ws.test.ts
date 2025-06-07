@@ -116,7 +116,7 @@ describe("WebSocketClient 測試", () => {
     openHandler(new Event("open"));
 
     const expectedLoginMessage = JSON.stringify({
-      TypeCode: "Login",
+      type: "Login",
       name: mockOptions.name,
       memNo: mockOptions.memNo,
       notifyClientCountRole: mockOptions.notifyClientCountRole,
@@ -159,7 +159,7 @@ describe("WebSocketClient 測試", () => {
 
     vi.advanceTimersByTime(30000);
     expect(mockWebSocketInstance.send).toHaveBeenCalledWith(
-      JSON.stringify({ TypeCode: "Ping" })
+      JSON.stringify({ type: "Message", TypeCode: "Ping" })
     );
   });
 

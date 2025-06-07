@@ -30,7 +30,7 @@ export interface WebSocketMessage {
 export interface WebSocketOptions {
   /** WebSocket 伺服器的 URL */
   webSocketURL: string;
-  /** 用戶唯一識別碼 */
+  /** 用戶唯一識別碼 UUID，傳送到底層作為人數控管 */
   keyNo: string;
   /** 客戶端的 IP 地址 */
   clientIp: string;
@@ -350,7 +350,7 @@ export class WebSocketClient {
    */
   private sendHeartbeat(): void {
     if (this.isConnected()) {
-      this.send({ type: "Ping", TypeCode: "Ping" });
+      this.send({ type: "Message", TypeCode: "Ping" });
 
       // 設置心跳超時檢查
       this.heartbeatTimeoutTimer = setTimeout(() => {
