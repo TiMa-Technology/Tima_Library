@@ -91,8 +91,7 @@ describe("redirect", () => {
     });
 
     it("應正確處理相對路徑", () => {
-      mockWindow.location.pathname = "/users/";
-      redirect("profile.html");
+      redirect("/users/profile.html");
       expect(mockWindow.location.href).toBe(
         "http://localhost:3000/users/profile.html"
       );
@@ -132,7 +131,7 @@ describe("redirect", () => {
     });
 
     it("應正確處理相對路徑", () => {
-      redirect("edit.html");
+      redirect("users/edit.html");
       expect(mockWindow.location.href).toBe(
         "https://example.com.tw/project1/users/edit.html"
       );
@@ -246,11 +245,7 @@ describe("redirect", () => {
     });
 
     it("應正確處理深層路徑的相對導向", () => {
-      mockWindow.location.host = "localhost:3000";
-      mockWindow.location.pathname = "/app/users/profile/settings/";
-      mockWindow.location.origin = "http://localhost:3000";
-
-      redirect("security.html");
+      redirect("app/users/profile/settings/security.html");
       expect(mockWindow.location.href).toBe(
         "http://localhost:3000/app/users/profile/settings/security.html"
       );
