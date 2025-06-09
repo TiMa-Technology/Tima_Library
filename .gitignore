@@ -401,3 +401,5 @@ FodyWeavers.xsd
 
 # Web
 node_modules/
+
+.env
