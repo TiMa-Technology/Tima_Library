@@ -59,12 +59,8 @@ export function redirect(
       targetUrl = getBaseUrl() + path;
     } else {
       // 不是以 / 開頭的相對路徑，加上當前目錄
-      const currentPath = window.location.pathname;
-      const currentDir = currentPath.substring(
-        0,
-        currentPath.lastIndexOf("/") + 1
-      );
-      targetUrl = `${window.location.origin}${currentDir}${path}`;
+      const currentPath = getBaseUrl();
+      targetUrl = `${currentPath}/${path}`;
     }
 
     if (newTab) {
@@ -98,7 +94,7 @@ export function redirect(
  * 當前 URL: https://example.com.tw/project1/users/profile
  * 回傳: "https://example.com.tw/project1"
  */
-function getBaseUrl(): string {
+export function getBaseUrl(): string {
   const { protocol, host, pathname } = window.location;
 
   // 開發環境判斷（localhost 或 127.0.0.1）
@@ -120,6 +116,64 @@ function getBaseUrl(): string {
 
   return `${protocol}//${host}`;
 }
+
+/**
+ * 取得當前 URL 中相對於虛擬目錄的路徑（不含虛擬目錄與查詢參數）
+ *
+ * @returns 相對路徑（不含 domain 與虛擬目錄）
+ *
+ * @example
+ * // 開發環境
+ * URL: http://localhost:3000/test/page?a=1
+ * 回傳: "/test/page"
+ *
+ * @example
+ * // 生產環境（IIS 虛擬目錄）
+ * URL: https://example.com/project1/page/edit?id=10
+ * 回傳: "/page/edit"
+ */
+export function getPath(): string {
+  const { host, pathname } = window.location;
+
+  // 移除前導斜線並拆分路徑
+  const segments = pathname.replace(/^\//, "").split("/");
+
+  // 若為開發環境（localhost）不移除虛擬目錄
+  const isDev = host.includes("localhost") || host.includes("127.0.0.1");
+
+  const relevant = isDev ? segments : segments.slice(1);
+
+  return "/" + relevant.join("/");
+}
+
+/**
+ * 取得當前頁面的名稱（即最後一段 path，不含參數與虛擬目錄）
+ *
+ * @returns 頁面名稱字串（例如 "edit", "list"）
+ *
+ * @example
+ * // 開發環境
+ * URL: http://localhost:3000/user/list?id=5
+ * 回傳: "list"
+ *
+ * @example
+ * // 生產環境
+ * URL: https://abc.com/project1/page/edit
+ * 回傳: "edit"
+ */
+export function getPageName(): string {
+  const { host, pathname } = window.location;
+
+  const segments = pathname.replace(/^\//, "").split("/");
+
+  const isDev = host.includes("localhost") || host.includes("127.0.0.1");
+
+  // 若非開發模式，跳過虛擬目錄第一段
+  const relevant = isDev ? segments : segments.slice(1);
+
+  return relevant[relevant.length - 1] || "";
+}
+
 /**
  * 返回上一頁。
  * @example
@@ -127,4 +181,36 @@ function getBaseUrl(): string {
  */
 export function goBack(): void {
   window.history.back();
+}
+
+/**
+ * 獲取 URL 參數 QueryString 的 key
+ * @param {string} key - 參數名稱
+ * @returns {string|null} 參數值
+ * @example
+ * // https://www.google.com?key=value
+ * getQueryParam("key") // value
+ */
+export function getQueryParam(key: string): string | null {
+  return new URLSearchParams(window.location.search).get(key);
+}
+
+/**
+ * 移除 URL 中的指定參數。
+ * @param {string} url - 目標網址。
+ * @param {string} name - 要移除的參數名稱。
+ * @returns {string} 移除參數後的網址。
+ * @example
+ * // https://www.google.com?key=value&name=test
+ * removeUrlParam("https://www.google.com?key=value&name=test", "name") // "https://www.google.com?key=value"
+ */
+export function removeUrlParam(url: string, name: string): string {
+  const [base, queryString] = url.split("?");
+  if (!queryString) return url;
+
+  const params = new URLSearchParams(queryString);
+  params.delete(name);
+
+  const newQuery = params.toString();
+  return newQuery ? `${base}?${newQuery}` : base;
 }
