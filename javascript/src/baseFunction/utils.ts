@@ -1,3 +1,5 @@
+import type { ApiError } from "../browserUtils";
+
 /**
  * 將數字格式化為帶千位分隔符和小數位的字符串
  * @param {number} num - 要格式化的數字
@@ -162,3 +164,66 @@ export async function atobDecode(str: string): Promise<string> {
  */
 export const sleep = (ms: number): Promise<void> =>
   new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * 簡單的雜湊，適合做為緩存的鍵值
+ * @param {string} str 要被雜湊的字串
+ * @returns {string}
+ */
+export const simpleHash = (str: string): string => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash;
+  }
+  return hash.toString(36);
+};
+
+/**
+ * 錯誤處理，將 API 錯誤轉換為統一格式
+ * @param error - 錯誤物件
+ * @returns {object} 格式化的錯誤物件
+ */
+export const handleApiError = (
+  error: unknown
+): {
+  type: "business" | "auth" | "server" | "network";
+  message: string;
+  showToUser: boolean;
+  shouldRetry: boolean;
+  action?: string;
+} => {
+  if (typeof error === "object" && error !== null) {
+    const err = error as Partial<ApiError> & { status?: string };
+    if (err.isApiError) {
+      return {
+        type: "business",
+        message: `操作失敗: ${err.message ?? ""}`,
+        showToUser: true,
+        shouldRetry: false,
+      };
+    } else if (err.status === "401") {
+      return {
+        type: "auth",
+        message: "登入已過期，請重新登入",
+        showToUser: true,
+        shouldRetry: false,
+        action: "redirect_login",
+      };
+    } else if (err.status && parseInt(err.status) >= 500) {
+      return {
+        type: "server",
+        message: "伺服器暫時無法回應",
+        showToUser: true,
+        shouldRetry: true,
+      };
+    }
+  }
+  return {
+    type: "network",
+    message: `系統錯誤: ${(error as Error)?.message || "未知錯誤"}`,
+    showToUser: true,
+    shouldRetry: true,
+  };
+};
