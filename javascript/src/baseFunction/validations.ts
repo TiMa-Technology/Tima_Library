@@ -58,7 +58,7 @@ export function isEmail(email: string): boolean {
  * * 檢查日期字串是不是空值( C# 的 DateTime.MinValue )
  * @param {string} dateString - 要驗證的日期字符串
  * @returns {boolean} 如果是有效的日期則返回 true
- * @example isValidDate(""0001-01-01T00:00:00"") => false
+ * @example isValidDate("0001-01-01T00:00:00") => false
  * @example isValidDate("2023-10-05") => true
  * @example isValidDate("2023/10/05") => true
  * @example isValidDate("2023-13-05") => false

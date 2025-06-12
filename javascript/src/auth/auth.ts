@@ -1,5 +1,5 @@
-import { emptyGuid } from "@/baseFunction";
-import { ajaxApi } from "@/browserUtils";
+import { emptyGuid } from "../baseFunction";
+import { ajaxApi } from "../browserUtils";
 
 export interface ApiResponse<T = any> {
   ErrorMessage?: string;
@@ -77,7 +77,10 @@ export class AppAuthorization {
       return true;
     }
 
-    const token = await this.getToken();
+    const token = await this.getToken().catch(() => {
+      sessionStorage.removeItem("apitoken");
+      sessionStorage.removeItem("apitokentimeout");
+    });
     if (token?.Token && token?.TokenExpire) {
       headers["Authorization"] =
         "Basic " + btoa(`${this.appAccount}:${token.Token}`);
