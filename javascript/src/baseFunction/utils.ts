@@ -1,4 +1,4 @@
-import type { ApiError } from "../browserUtils";
+import type { ApiError } from "types/api";
 
 /**
  * 將數字格式化為帶千位分隔符和小數位的字符串

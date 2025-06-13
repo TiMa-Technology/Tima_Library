@@ -1,53 +1,13 @@
+import type {
+  ApiConfig,
+  ApiError,
+  ApiResponse,
+  AvailableHttpMethod,
+  ExecuteQueryProps,
+  QueryOptions,
+} from "../../types/api";
 import { AppAuthorization } from "../auth/auth";
 import { simpleHash } from "../baseFunction/utils";
-
-export interface ApiResponse<T = any> {
-  ErrorMessage?: string;
-  ItemList?: T[];
-  [key: string]: any;
-}
-
-export interface ApiError extends Error {
-  isApiError?: boolean;
-  response?: ApiResponse;
-  status?: string;
-}
-
-export interface ApiConfig {
-  staleTime: number;
-  cacheTime: number;
-  retry: number;
-  retryDelay: (attemptIndex: number) => number;
-  enabled: boolean;
-  treatErrorMessageAsError?: boolean;
-  cache?: boolean;
-}
-
-export type AvailableHttpMethod =
-  | "GET"
-  | "POST"
-  | "DELETE"
-  | "PATCH"
-  | "PUT"
-  | "OPTION";
-
-export interface QueryOptions {
-  baseUrl?: string;
-  endpoint: string;
-  requestBody: string | Record<string, any> | FormData;
-  method?: AvailableHttpMethod;
-  config?: Partial<ApiConfig>;
-  fetchOptions?: Partial<RequestInit>;
-}
-
-export interface LogOptions {
-  bMemNo: string | null;
-  type: string;
-  message: string;
-  message2?: string;
-  message3?: string;
-  url?: string;
-}
 
 export class ApiStateManager {
   private cache: Map<string, { data: ApiResponse; timestamp: number }>;
@@ -74,6 +34,14 @@ export class ApiStateManager {
   generateQueryKey(endpoint: string, requestBody: any, method: string): string {
     const bodyHash = requestBody ? simpleHash(JSON.stringify(requestBody)) : "";
     return `${method}:${endpoint}:${bodyHash}`;
+  }
+
+  public getQuery(queryKey: string): QueryState | undefined {
+    return this.queries.get(queryKey);
+  }
+
+  public setCache(queryKey: string, data: ApiResponse): void {
+    this.cache.set(queryKey, { data, timestamp: Date.now() });
   }
 
   isCacheValid(
@@ -111,7 +79,14 @@ export class ApiStateManager {
     options: Partial<ApiConfig> = {},
     fetchOptions: Partial<RequestInit> = {}
   ): Promise<ApiResponse> {
-    const requestUrl = `${baseUrl}/${endpoint}`;
+    const buildUrlWithParams = (url: string, params: Record<string, any>) => {
+      const usp = new URLSearchParams(params).toString();
+      return usp ? `${url}?${usp}` : url;
+    };
+    let requestUrl = `${baseUrl}/${endpoint}`;
+    if (method === "GET" && requestBody && typeof requestBody === "object") {
+      requestUrl = buildUrlWithParams(requestUrl, requestBody);
+    }
     const isFormData = requestBody instanceof FormData;
 
     const headers: Record<string, string> = {};
@@ -145,7 +120,7 @@ export class ApiStateManager {
 
     if (!response.ok) {
       const apiError = new Error(
-        data.ErrorMessage || "API 請求失敗"
+        data?.errorMessage || "API 請求失敗"
       ) as ApiError;
       apiError.isApiError = true;
       apiError.response = data;
@@ -153,8 +128,8 @@ export class ApiStateManager {
       throw apiError;
     }
 
-    if (data.ErrorMessage && options.treatErrorMessageAsError !== false) {
-      const apiError = new Error(data.ErrorMessage) as ApiError;
+    if (data?.errorMessage && options.treatErrorMessageAsError) {
+      const apiError = new Error(data.errorMessage) as ApiError;
       apiError.isApiError = true;
       apiError.response = data;
       apiError.status = "api_error";
@@ -171,11 +146,16 @@ export class ApiStateManager {
   setDefaultConfig(config: Partial<ApiConfig>): void {
     Object.assign(this.defaultConfig, config);
   }
+
+  // 清理機制
+  public cleanup(): void {
+    this.queries.forEach((query) => {
+      query.subscribers.clear();
+    });
+    this.queries.clear();
+    this.cache.clear();
+  }
 }
-const apiStateManager = new ApiStateManager(
-  process.env.APP_ACCOUNT || "",
-  process.env.APP_PASSWORD || ""
-);
 
 export class QueryState {
   queryKey: string;
@@ -267,20 +247,29 @@ export class QueryState {
   }
 }
 
-export async function ajaxApi({
-  baseUrl = "../api",
-  endpoint,
-  requestBody,
-  method = "GET",
-  config = {},
-  fetchOptions = {},
-}: QueryOptions): Promise<ApiResponse> {
+export function createApiStateManager(appAccount: string, appPassword: string) {
+  return new ApiStateManager(appAccount, appPassword);
+}
+
+export async function ajaxApi(
+  apiStateManager: ApiStateManager,
+  {
+    baseUrl = "../api",
+    endpoint,
+    requestBody,
+    method = "GET",
+    config = {},
+    fetchOptions = {},
+  }: QueryOptions
+): Promise<ApiResponse> {
   const finalConfig = { ...apiStateManager.getDefaultConfig(), ...config };
   let attempt = 0;
   const maxAttempts = finalConfig.retry + 1;
 
   while (attempt < maxAttempts) {
     try {
+      if (!endpoint) throw new Error("無提供 API 端點");
+
       return await apiStateManager.executeRequest(
         baseUrl,
         endpoint,
@@ -314,14 +303,17 @@ export async function ajaxApi({
   throw new Error("Unexpected error: Max attempts reached");
 }
 
-export function useAjaxApi({
-  baseUrl = "../api",
-  endpoint,
-  requestBody,
-  method = "GET",
-  config = {},
-  fetchOptions = {},
-}: QueryOptions): QueryState {
+export function useAjaxApi(
+  apiStateManager: ApiStateManager,
+  {
+    baseUrl = "../api",
+    endpoint,
+    requestBody,
+    method = "GET",
+    config = {},
+    fetchOptions = {},
+  }: QueryOptions
+): QueryState {
   const finalConfig = { ...apiStateManager.getDefaultConfig(), ...config };
   const queryKey = apiStateManager.generateQueryKey(
     endpoint,
@@ -344,15 +336,15 @@ export function useAjaxApi({
       ));
 
   if (shouldFetch && !queryState.isFetching) {
-    executeQuery(
+    executeQuery(apiStateManager, {
       queryState,
       baseUrl,
       endpoint,
       requestBody,
       method,
-      finalConfig,
-      fetchOptions
-    ).catch((error) => {
+      config: finalConfig,
+      fetchOptions,
+    }).catch((error) => {
       console.debug("Query execution completed with error:", error.message);
     });
   }
@@ -361,13 +353,16 @@ export function useAjaxApi({
 }
 
 async function executeQuery(
-  queryState: QueryState,
-  baseUrl: string,
-  endpoint: string,
-  requestBody: string | Record<string, any> | FormData,
-  method: AvailableHttpMethod,
-  config: Partial<ApiConfig>,
-  fetchOptions: Partial<RequestInit> = {}
+  apiStateManager: ApiStateManager,
+  {
+    queryState,
+    baseUrl,
+    endpoint,
+    requestBody,
+    method,
+    config,
+    fetchOptions = {},
+  }: ExecuteQueryProps
 ): Promise<ApiResponse> {
   const queryKey = queryState.queryKey;
   queryState.updateStatus("loading");
@@ -377,6 +372,7 @@ async function executeQuery(
 
   while (attempt < maxAttempts) {
     try {
+      if (!endpoint) throw new Error("無提供 API 端點");
       const data = await apiStateManager.executeRequest(
         baseUrl,
         endpoint,
@@ -421,14 +417,17 @@ async function executeQuery(
   throw new Error("Unexpected error: Max attempts reached");
 }
 
-export function refetchQuery({
-  baseUrl = "../api",
-  endpoint,
-  requestBody = {},
-  method = "GET",
-  config = {},
-  fetchOptions = {},
-}: QueryOptions): Promise<ApiResponse> {
+export function refetchQuery(
+  apiStateManager: ApiStateManager,
+  {
+    baseUrl = "../api",
+    endpoint,
+    requestBody = {},
+    method = "GET",
+    config = {},
+    fetchOptions = {},
+  }: QueryOptions
+): Promise<ApiResponse> {
   const finalConfig = { ...apiStateManager.getDefaultConfig(), ...config };
   const queryKey = apiStateManager.generateQueryKey(
     endpoint,
@@ -438,61 +437,70 @@ export function refetchQuery({
   const queryState = apiStateManager["queries"].get(queryKey);
 
   if (queryState) {
-    return executeQuery(
+    return executeQuery(apiStateManager, {
       queryState,
       baseUrl,
       endpoint,
       requestBody,
       method,
-      finalConfig,
-      fetchOptions
-    );
+      config: finalConfig,
+      fetchOptions,
+    });
   }
 
   return Promise.reject(new Error("Query not found"));
 }
 
-export function invalidateQuery({
-  baseUrl = "../api",
-  endpoint,
-  requestBody = {},
-  method = "GET",
-  config = {},
-  fetchOptions = {},
-}: QueryOptions): Promise<void> {
+export async function invalidateQuery(
+  apiStateManager: ApiStateManager,
+  {
+    baseUrl = "../api",
+    endpoint,
+    requestBody = {},
+    method = "GET",
+    config = {},
+    fetchOptions = {},
+  }: QueryOptions
+): Promise<void> {
   const finalConfig = { ...apiStateManager.getDefaultConfig(), ...config };
   const queryKey = apiStateManager.generateQueryKey(
     endpoint,
     requestBody,
     method
   );
+
   apiStateManager["cache"].delete(queryKey);
 
   const queryState = apiStateManager["queries"].get(queryKey);
   if (queryState && queryState.status === "success" && finalConfig.enabled) {
-    return executeQuery(
+    return executeQuery(apiStateManager, {
       queryState,
       baseUrl,
       endpoint,
       requestBody,
       method,
-      finalConfig,
-      fetchOptions
-    ).then(() => {});
+      config: finalConfig,
+      fetchOptions,
+    }).then(() => {});
   }
 
   return Promise.resolve();
 }
 
-export function clearAllCache(): void {
+export function clearAllCache(apiStateManager: ApiStateManager): void {
   apiStateManager["cache"].clear();
 }
 
-export function setDefaultConfig(config: Partial<ApiConfig>): void {
+export function setDefaultConfig(
+  apiStateManager: ApiStateManager,
+  config: Partial<ApiConfig>
+): void {
   apiStateManager.setDefaultConfig(config);
 }
 
 // 定期清理過期快取
-setInterval(() => {
-  apiStateManager.cleanExpiredCache();
-}, 60000);
+export function cleanCacheInterval(apiStateManager: ApiStateManager) {
+  setInterval(() => {
+    apiStateManager.cleanExpiredCache();
+  }, 60000);
+}
