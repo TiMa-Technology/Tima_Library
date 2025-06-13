@@ -94,5 +94,5 @@ export function isValidDate(dateString: string): boolean {
  */
 export function isEmptyGuid(id: string): boolean {
   const emptyId = emptyGuid();
-  return id === emptyId;
+  return id === emptyId || !id.length;
 }
