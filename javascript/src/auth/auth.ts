@@ -1,20 +1,8 @@
+import type { ApiResponse, TokenResponse } from "types/api";
 import { emptyGuid } from "../baseFunction";
-import { ajaxApi } from "../browserUtils";
-
-export interface ApiResponse<T = any> {
-  ErrorMessage?: string;
-  ItemList?: T[];
-  [key: string]: any;
-}
-export interface TokenResponse extends ApiResponse {
-  ErrorMessage?: string;
-  Token?: string;
-  TokenExpire?: string;
-  ItemList?: Array<{ IsInside: string }>;
-}
 
 export class AppAuthorization {
-  private tokenPromise: Promise<TokenResponse | null> | null = null;
+  private tokenPromise: Promise<ApiResponse<TokenResponse>> | null = null;
 
   constructor(
     private appAccount: string = "",
@@ -25,27 +13,31 @@ export class AppAuthorization {
     }
   }
 
-  async getToken(): Promise<TokenResponse | null> {
+  async getToken(): Promise<ApiResponse<TokenResponse>> {
     if (this.tokenPromise) {
       return this.tokenPromise;
     }
 
-    this.tokenPromise = ajaxApi({
-      method: "GET",
-      endpoint: "TM_ApiMgr_App_CheckSsword",
-      requestBody: { account: this.appAccount, ssword: this.appPassword },
-    }).finally(() => {
-      this.tokenPromise = null;
-    });
+    this.tokenPromise = fetch(
+      `${window.location.origin}/api/TM_ApiMgr_App_CheckSsword?account=${this.appAccount}&ssword=${this.appPassword}`
+    )
+      .then((res) => res.json())
+      .finally(() => {
+        this.tokenPromise = null;
+      });
 
     const data = await this.tokenPromise;
 
-    if (data?.ErrorMessage) {
-      throw new Error(data?.ErrorMessage);
+    if (data?.errorMessage) {
+      throw new Error(data?.errorMessage);
     }
 
-    sessionStorage.setItem("apitoken", data?.Token || "");
-    sessionStorage.setItem("apitokentimeout", data?.TokenExpire || "");
+    if (!data.token) {
+      throw new Error("無效的憑證!");
+    }
+
+    sessionStorage.setItem("apitoken", data?.token || "");
+    sessionStorage.setItem("apitokentimeout", data?.tokenExpire || "");
     return data;
   }
 
@@ -81,9 +73,9 @@ export class AppAuthorization {
       sessionStorage.removeItem("apitoken");
       sessionStorage.removeItem("apitokentimeout");
     });
-    if (token?.Token && token?.TokenExpire) {
+    if (token?.token && token?.tokenExpire) {
       headers["Authorization"] =
-        "Basic " + btoa(`${this.appAccount}:${token.Token}`);
+        "Basic " + btoa(`${this.appAccount}:${token.token}`);
       return true;
     }
 
