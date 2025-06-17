@@ -1,5 +1,5 @@
 import { handleApiError } from "../baseFunction";
-import { ajaxApi } from "./ajax";
+import { ajaxApi, type ApiStateManager } from "./ajax";
 
 interface LogOptions {
   bMemNo: string | null;
@@ -14,6 +14,15 @@ interface LogOptions {
  * 記錄平台操作資訊的工具
  */
 export class InfoLogger {
+  private apiStateManager: ApiStateManager; // 儲存 ApiStateManager 實例
+
+  /**
+   * 構造函數，接受 ApiStateManager 實例
+   * @param apiStateManager - 已初始化的 ApiStateManager 實例
+   */
+  constructor(apiStateManager: ApiStateManager) {
+    this.apiStateManager = apiStateManager;
+  }
   /**
    * 取得使用者平台名稱（手機、電腦、iOS 等）
    * @returns {string} 平台名稱
@@ -37,16 +46,16 @@ export class InfoLogger {
    * @param options - Log 參數
    * @returns {Promise<void>}
    */
-  static async log({
+  async log({
     bMemNo,
     type,
     message,
     message2 = "",
     message3 = "",
-    url = location.href,
+    url = window.location.href,
   }: LogOptions): Promise<void> {
     try {
-      await ajaxApi({
+      await ajaxApi(this.apiStateManager, {
         method: "GET",
         endpoint: "My_Log_Info",
         requestBody: {
@@ -56,7 +65,7 @@ export class InfoLogger {
           message2,
           message3,
           url,
-          platform: this.getPlatform(),
+          platform: InfoLogger.getPlatform(),
         },
       });
     } catch (err) {
