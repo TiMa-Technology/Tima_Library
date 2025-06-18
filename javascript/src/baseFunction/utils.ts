@@ -1,103 +1,6 @@
 import type { ApiError } from "types/api";
 
 /**
- * 將數字格式化為帶千位分隔符和小數位的字符串
- * @param {number} num - 要格式化的數字
- * @param {number} [decimalPlaces=2] - 小數位數，預設為 2
- * @param {string} [decimalSep="."] - 小數點分隔符，預設為"."
- * @param {string} [thousandSep=","] - 千位分隔符，預設為","
- * @returns {string} 格式化後的數字字符串
- * @example formatNumber(1234567.89) => "1,234,567.89"
- */
-export function formatNumber(
-  num: number,
-  decimalPlaces: number = 2,
-  decimalSep: string = ".",
-  thousandSep: string = ","
-): string {
-  const n = Math.abs(num);
-  const sign = num < 0 ? "-" : "";
-  const wholePart = parseInt(n.toFixed(decimalPlaces));
-  const wholeStr = String(wholePart);
-  const j = wholeStr.length > 3 ? wholeStr.length % 3 : 0;
-
-  const formattedWhole =
-    (j ? wholeStr.substring(0, j) + thousandSep : "") +
-    wholeStr.substring(j).replace(/(\d{3})(?=\d)/g, "$1" + thousandSep);
-
-  const decimals = n.toFixed(decimalPlaces).slice(-decimalPlaces);
-  return sign + formattedWhole + (decimalPlaces ? decimalSep + decimals : "");
-}
-
-/**
- * 將數字格式化為指定的小數位數，並在小數位數不足時補零
- * @param {number} num - 要格式化的數字
- * @param {number} count - 小數位數
- * @returns {string} 格式化後的數字字符串，帶有補零的小數位
- * @example padDecimals(123.4, 3) => "123.400"
- * @example padDecimals(123, 2) => "123.00"
- */
-export function padDecimals(num: number, count: number): string {
-  const rounded =
-    Math.round(parseFloat(num.toString()) * Math.pow(10, count)) /
-    Math.pow(10, count);
-  const parts = rounded.toString().split(".");
-  if (parts.length === 1) {
-    return `${parts[0]}.${padLeft("", count, "0")}`;
-  }
-  if (parts[1].length < count) {
-    return `${parts[0]}.${parts[1]}${padLeft("", count - parts[1].length, "0")}`;
-  }
-  return rounded.toString();
-}
-
-/**
- * 移除字符串中的千位分隔符
- * @param {string} str - 包含千位分隔符的字符串
- * @returns {string} 移除千位分隔符後的字符串
- * @example removeThousands("1,234,567") => "1234567"
- */
-export function removeThousands(str: string): string {
-  return str.replaceAll(",", "");
-}
-
-/**
- * 在字符串左側填充指定字符
- * @param {string} str - 要填充的字符串
- * @param {number} length - 期望的長度
- * @param {string} padChar - 用於填充的字符
- * @returns {string} 填充後的字符串
- * @example padLeft("123", 5, "0") => "00123"
- */
-export function padLeft(str: string, length: number, padChar: string): string {
-  if (str.length >= length) return str;
-  return padLeft(padChar + str, length, padChar);
-}
-
-/**
- * 將數字字符串添加逗號分隔符
- * @param {string|number} num - 要格式化的數字
- * @returns {string} 格式化後帶逗號的數字字符串
- * @example addCommas(1234567.89) => "1,234,567.89"
- */
-export function addCommas(num: string | number): string {
-  const parts = String(num).split(".");
-  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  return parts.join(".");
-}
-
-/**
- * 將字符串的首字母大寫
- * @param {string} str - 要處理的字符串
- * @returns {string} 首字母大寫的字符串
- * @example capitalize("hello world") => "Hello world"
- * @example capitalize("javascript") => "Javascript"
- */
-export function capitalize(str: string): string {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
-/**
  * 生成新的 GUID
  * @returns {string} 新的 GUID
  * @example newGuid() => "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"
@@ -113,47 +16,6 @@ export function newGuid(): string {
  */
 export function emptyGuid(): string {
   return "00000000-0000-0000-0000-000000000000";
-}
-
-/**
- * 此函數接受一個字符串，將其`編碼`為 base64 編碼字符串。
- *
- * 這是對 window.btoa 的替代方案，因為 window.btoa 不能正確地`編碼` UTF-8 字符串。
- * @param {string} str - 要加密的字符串
- * @param {string} [prefix="0x"] - 用於轉換十六進制字符的前綴，預設為 "0x"
- * @returns {Promise<string>} 一個解析為 base64 編碼字符串的 Promise
- * @example btoaEncode("Hello world!") => "SGVsbG8gd29ybGQh"
- * @example btoaEncode(JSON.stringify({ key: "value" })) => "eyJrZXkiOiJ2YWx1ZSJ9"
- * @see https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/btoa
- */
-export function btoaEncode(str: string, prefix: string = "0x"): string {
-  return btoa(
-    encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function (match, p1) {
-      return String.fromCharCode(parseInt(prefix + p1));
-    })
-  );
-}
-
-/**
- * 解密 base64 `編碼`的字符串。
- *
- * 此函數接受一個 base64 編碼的字符串，解碼它，然後將每個字符轉換為其百分比編碼表示。
- * 最後，它解碼百分比編碼的字符串以返回原始字符串。
- *
- * @param {string} str - 要解密的 base64 編碼字符串。
- * @returns {Promise<string>} 一個解析為解密字符串的 Promise。
- * @example atobDecode("SGVsbG8gd29ybGQh") => "Hello world!"
- * @example atobDecode("eyJrZXkiOiJ2YWx1ZSJ9") => '{"key":"value"}'
- * @see https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/at
- */
-export async function atobDecode(str: string): Promise<string> {
-  return decodeURIComponent(
-    Array.prototype.map
-      .call(atob(str), function (c) {
-        return "%" + c.charCodeAt(0).toString(16).padStart(2, "0");
-      })
-      .join("")
-  );
 }
 
 /**
@@ -195,7 +57,8 @@ export const handleApiError = (
   action?: string;
 } => {
   if (typeof error === "object" && error !== null) {
-    const err = error as Partial<ApiError> & { status?: string };
+    const err = error as Partial<ApiError> & { status?: string | number };
+
     if (err.isApiError) {
       return {
         type: "business",
@@ -203,7 +66,10 @@ export const handleApiError = (
         showToUser: true,
         shouldRetry: false,
       };
-    } else if (err.status === "401") {
+    }
+
+    const status = parseInt(String(err.status));
+    if (status === 401) {
       return {
         type: "auth",
         message: "登入已過期，請重新登入",
@@ -211,7 +77,9 @@ export const handleApiError = (
         shouldRetry: false,
         action: "redirect_login",
       };
-    } else if (err.status && parseInt(err.status) >= 500) {
+    }
+
+    if (!isNaN(status) && status >= 500) {
       return {
         type: "server",
         message: "伺服器暫時無法回應",
@@ -220,6 +88,7 @@ export const handleApiError = (
       };
     }
   }
+
   return {
     type: "network",
     message: `系統錯誤: ${(error as Error)?.message || "未知錯誤"}`,
@@ -227,3 +96,111 @@ export const handleApiError = (
     shouldRetry: true,
   };
 };
+
+/**
+ * 深層複製物件或陣列（需瀏覽器支援 `structuredClone`）
+ * @param obj 要複製的物件
+ * @returns 深拷貝的結果
+ * @example
+ * const original = { a: 1, b: { c: 2 } };
+ * const copy = deepClone(original);
+ */
+export function deepClone<T>(obj: T): T {
+  return JSON.parse(JSON.stringify(obj));
+}
+
+/**
+ * 移除陣列中重複的元素
+ * @param arr 原始陣列
+ * @returns 不重複的新陣列
+ * @example
+ * removeDuplicate([1, 2, 2, 3]) // [1, 2, 3]
+ */
+export function removeDuplicate<T>(arr: T[]): T[] {
+  return [...new Set(arr)];
+}
+
+/**
+ * 將 camelCase 字串轉換為 snake_case
+ * @param str camelCase 字串
+ * @returns snake_case 字串
+ * @example
+ * camelToSnake("myVariableName") // "my_variable_name"
+ */
+export function camelToSnake(str: string): string {
+  return str.replace(/([A-Z])/g, "_$1").toLowerCase();
+}
+
+/**
+ * 生成隨機的十六進位顏色碼
+ * @returns 顏色字串（如 "#a3e12f"）
+ * @example
+ * getRandomColor() // "#f3d2b6"
+ */
+export function getRandomColor(): string {
+  return `#${Math.floor(Math.random() * 16777215)
+    .toString(16)
+    .padStart(6, "0")}`;
+}
+
+/**
+ * 扁平化多層巢狀陣列
+ * @param arr 多層陣列
+ * @returns 單層陣列
+ * @example
+ * flattenArray([1, [2, [3]]]) // [1, 2, 3]
+ */
+export function flattenArray<T>(arr: any[]): T[] {
+  return arr.flat(Infinity) as T[];
+}
+
+/**
+ * 根據物件的指定鍵排序陣列（預設升序）
+ * @param array 要排序的陣列
+ * @param key 依據排序的鍵
+ * @returns 排序後的新陣列
+ * @example
+ * soryByKey([{ id: 2 }, { id: 1 }], 'id') // [{ id: 1 }, { id: 2 }]
+ */
+export function sortByKey<T extends Record<string, any>>(
+  array: T[],
+  key: string
+): T[] {
+  return [...array].sort((a, b) => (a[key] > b[key] ? 1 : -1));
+}
+
+/**
+ * 將陣列轉換為物件，以指定鍵為 key
+ * @param arr 陣列資料
+ * @param key 作為物件 key 的屬性名稱
+ * @returns 轉換後的物件
+ * @example
+ * convertArrayToObject([{ id: 'a' }, { id: 'b' }], 'id') // { a: { id: 'a' }, b: { id: 'b' } }
+ */
+export function convertArrayToObject<T extends Record<string, any>>(
+  arr: T[],
+  key: string
+): Record<string, T> {
+  return arr.reduce(
+    (obj, item) => {
+      obj[item[key]] = item;
+      return obj;
+    },
+    {} as Record<string, T>
+  );
+}
+
+/**
+ * 將物件轉換為 URL 查詢字串
+ * @param obj 物件資料
+ * @returns 查詢字串（如 "a=1&b=2"）
+ * @example
+ * objToQueryString({ a: 1, b: "test" }) // "a=1&b=test"
+ */
+export function objToQueryString<T extends Record<string, any>>(
+  obj: T
+): string {
+  return Object.keys(obj)
+    .map((key) => `${encodeURIComponent(key)}=${encodeURIComponent(obj[key])}`)
+    .join("&");
+}
