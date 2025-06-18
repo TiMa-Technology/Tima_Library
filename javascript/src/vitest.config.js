@@ -10,7 +10,7 @@ export default defineConfig({
     environment: "jsdom", // 用到 window/document，否則可用 'node'
     include: ["src/**/__tests__/**/*.test.{js,ts}"], // 測試檔案路徑
     alias: {
-      "@/*": path.resolve(__dirname, "./src"), // 這樣 '@/xxx' 就是指向 ./src/xxx
+      "@": path.resolve(__dirname, "./src"),
     },
     env: {
       APP_ACCOUNT: "test-account",
