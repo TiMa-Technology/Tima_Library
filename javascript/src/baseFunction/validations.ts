@@ -96,3 +96,39 @@ export function isEmptyGuid(id: string): boolean {
   const emptyId = emptyGuid();
   return id === emptyId || !id.length;
 }
+
+/**
+ * 判斷陣列是否為空（長度為 0）
+ * @param arr 要檢查的陣列
+ * @returns 如果是空陣列則回傳 true，否則為 false
+ * @example
+ * isEmptyArray([]) // true
+ * isEmptyArray([1]) // false
+ */
+export function isEmptyArray<T>(arr: T[]): boolean {
+  return Array.isArray(arr) && arr.length === 0;
+}
+
+/**
+ * 判斷物件是否為空（沒有任何鍵值）
+ * @param obj 要檢查的物件
+ * @returns 如果是空物件則回傳 true，否則為 false
+ * @example
+ * isEmptyObject({}) // true
+ * isEmptyObject({ a: 1 }) // false
+ */
+export function isEmptyObject<T extends object>(obj: T): boolean {
+  return Object.keys(obj).length === 0;
+}
+
+/**
+ * 判斷數字是否為偶數
+ * @param num 整數數字
+ * @returns 如果是偶數則回傳 true
+ * @example
+ * isEven(2) // true
+ * isEven(3) // false
+ */
+export function isEven(num: number): boolean {
+  return num % 2 === 0;
+}
