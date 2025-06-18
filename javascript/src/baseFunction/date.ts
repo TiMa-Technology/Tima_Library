@@ -12,54 +12,60 @@ import { isValidDate } from "./validations";
  * @returns {string} 格式化後的日期或時間字串；若輸入無效或民國年 <= 1，則回傳空字串
  *
  * @example
- * formatDateTime(new Date("2025-06-12"));
+ * formatDate(new Date("2025-06-12"));
  * // => "2025/06/12"
  *
  * @example
- * formatDateTime("2025-06-12", { separator: ".", components: ["year", "month", "day", "time"] });
+ * formatDate("2025-06-12", { separator: ".", components: ["year", "month", "day", "time"] });
  * // => "2025.06.12 00:00"
  *
  * @example
- * formatDateTime("2023-01-01T10:05:30", { components: ["year", "month", "day", "time", "seconds"] });
+ * formatDate("2023-01-01T10:05:30", { components: ["year", "month", "day", "time", "seconds"] });
  * // => "2023/01/01 10:05:30"
  *
  * @example
- * formatDateTime("2025-06-12", { roc: true });
+ * formatDate("2025-06-12", { roc: true });
  * // => "114/06/12"
  *
  * @example
- * formatDateTime("1912-01-01", { roc: true });
+ * formatDate("1912-01-01", { roc: true });
  * // => ""（民國 1 年視為無效）
  *
  * @example
- * formatDateTime("2024-02-20", { components: ["year", "month", "day", "weekday"], useChineseFormat: true });
- * // => "2024/02/20(火)"
+ * formatDate("2024-02-20", { components: ["year", "month", "day", "weekday"], useChineseFormat: true });
+ * // => "2024/02/20 (二)"
  *
  * @example
- * formatDateTime("2025-06-12", { components: ["weekday"], useChineseFormat: true });
+ * formatDate("2025-06-12", { components: ["weekday"], useChineseFormat: true });
  * // => "星期四"
  *
  * @example
- * formatDateTime("2025-06-12", { components: ["month"], useChineseFormat: true });
+ * formatDate("2025-06-12", { components: ["month"], useChineseFormat: true });
  * // => "6月"
  *
  * @example
- * formatDateTime("2025-06-12", { components: ["year"] });
+ * formatDate("2025-06-12", { components: ["year"] });
  * // => "2025"
  *
  * @example
- * formatDateTime("2025-06-12", { components: ["year"], roc: true });
+ * formatDate("2025-06-12", { components: ["year"], roc: true });
  * // => "114"
  *
  * @example
- * formatDateTime("0001-01-01T00:00:00");
+ * formatDate("0001-01-01T00:00:00");
  * // => ""
  */
-export function formatDateTime(
+export function formatDate(
   date: Date | string,
   options: {
     components?: ("year" | "month" | "day" | "weekday" | "time" | "seconds")[];
-    useChineseFormat?: boolean;
+    useChineseFormat?:
+      | boolean
+      | {
+          date?: boolean;
+          time?: boolean;
+          weekday?: boolean;
+        };
     separator?: string;
     roc?: boolean;
   } = {}
@@ -70,6 +76,18 @@ export function formatDateTime(
     separator = "/",
     roc = false,
   } = options;
+
+  // 處理中文格式設定
+  const chineseConfig =
+    typeof useChineseFormat === "boolean"
+      ? {
+          date: useChineseFormat,
+          time: useChineseFormat,
+          weekday: useChineseFormat,
+        }
+      : { date: false, time: false, weekday: false, ...useChineseFormat };
+
+  if (!date) return "";
 
   let d: Date;
   if (typeof date === "string") {
@@ -82,51 +100,82 @@ export function formatDateTime(
 
   const fullYear = d.getFullYear();
   const year = roc ? fullYear - 1911 : fullYear;
-
-  if (roc && year <= 1) return "";
+  if (roc && year <= 0) return "";
 
   const result: string[] = [];
   const dayList: string[] = ["日", "一", "二", "三", "四", "五", "六"];
 
+  let timePart = "";
+  let weekdayPart = "";
+
   for (const component of components) {
     switch (component) {
       case "year":
-        result.push(String(year));
+        if (chineseConfig.date) {
+          result.push(`${roc ? year : year}年`);
+        } else {
+          result.push(roc ? String(year) : String(year).padStart(4, "0"));
+        }
         break;
       case "month":
-        result.push(
-          useChineseFormat
-            ? `${d.getMonth() + 1}月`
-            : String(d.getMonth() + 1).padStart(2, "0")
-        );
+        if (chineseConfig.date) {
+          result.push(`${d.getMonth() + 1}月`);
+        } else {
+          result.push(String(d.getMonth() + 1).padStart(2, "0"));
+        }
         break;
       case "day":
-        result.push(String(d.getDate()).padStart(2, "0"));
+        if (chineseConfig.date) {
+          result.push(`${d.getDate()}日`);
+        } else {
+          result.push(String(d.getDate()).padStart(2, "0"));
+        }
         break;
       case "weekday":
-        result.push(
-          useChineseFormat
-            ? `星期${dayList[d.getDay()]}`
-            : `(${dayList[d.getDay()]})`
-        );
+        weekdayPart = chineseConfig.weekday
+          ? `星期${dayList[d.getDay()]}`
+          : `(${dayList[d.getDay()]})`;
         break;
       case "time":
-        result.push(
-          `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`
-        );
+        if (chineseConfig.time) {
+          timePart = `${d.getHours()}時${d.getMinutes()}分`;
+        } else {
+          timePart = `${String(d.getHours()).padStart(2, "0")}:${String(
+            d.getMinutes()
+          ).padStart(2, "0")}`;
+        }
         break;
       case "seconds":
-        if (components.includes("time")) {
-          result[result.length - 1] +=
-            `:${String(d.getSeconds()).padStart(2, "0")}`;
+        if (chineseConfig.time) {
+          timePart += `${d.getSeconds()}秒`;
+        } else {
+          timePart += `:${String(d.getSeconds()).padStart(2, "0")}`;
         }
         break;
     }
   }
 
-  return result.join(
-    components.includes("weekday") && !useChineseFormat ? "" : separator
-  );
+  // 拼接日期部分
+  const datePart = chineseConfig.date
+    ? result.join("")
+    : result.join(separator);
+
+  // 建立最終結果陣列，確保所有部分之間都有空格
+  const finalParts: string[] = [];
+
+  if (datePart) {
+    finalParts.push(datePart);
+  }
+
+  if (timePart) {
+    finalParts.push(timePart);
+  }
+
+  if (weekdayPart) {
+    finalParts.push(weekdayPart);
+  }
+
+  return finalParts.join(" ");
 }
 
 /**
@@ -165,13 +214,16 @@ export function convertROCToGregorian(
 
   const [y, m, d] = parts;
   const year = parseInt(y);
+
+  // 統一標準：民國 0 年以前無效，民國 1 年（1912）開始有效
   if (isNaN(year) || year <= 0) return "";
 
   const gregorianYear = year + 1911;
   const dateString = `${gregorianYear}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
+
   if (!isValidDate(dateString)) return "";
 
-  return formatDateTime(dateString, {
+  return formatDate(dateString, {
     components: ["year", "month", "day"],
     separator,
   });
@@ -188,9 +240,9 @@ export function convertROCToGregorian(
  * @param {number} [adjustments.hours=0] - 要加減的小時數（正數為加，負數為減）
  * @param {number} [adjustments.minutes=0] - 要加減的分鐘數（正數為加，負數為減）
  * @param {number} [adjustments.seconds=0] - 要加減的秒數（正數為加，負數為減）
- * @param {Object} [formatOptions] - 格式化選項，參見 formatDateTime 的選項
+ * @param {Object} [formatOptions] - 格式化選項，參見 formatDate 的選項
  * @param {string[]} [formatOptions.components=["year", "month", "day"]] - 要包含的日期或時間組件
- * @param {boolean} [formatOptions.useChineseFormat=false] - 是否使用中文格式
+ * @param {boolean | Object} [formatOptions.useChineseFormat=false] - 中文格式設定，可以是布林值或物件 { date?: boolean, time?: boolean, weekday?: boolean }
  * @param {string} [formatOptions.separator="/"] - 年月日之間的分隔符號
  * @param {boolean} [formatOptions.roc=false] - 是否使用民國年格式
  * @returns {string} 格式化後的日期時間字串；若輸入日期無效則回傳空字串
@@ -228,11 +280,18 @@ export function convertROCToGregorian(
  * // => "112/06/12" (ROC year)
  *
  * @example
- * adjustDateTime("invalid-date", { days: 5 })
- * // => ""
+ * adjustDateTime("2025-06-12", { days: 1 }, { useChineseFormat: { date: true } })
+ * // => "2025年6月13日" (Chinese date format)
  *
  * @example
- * adjustDateTime(new Date("0001-01-01T00:00:00"), { days: 5 })
+ * adjustDateTime("2025-06-12T10:30:45", { hours: 2 }, {
+ *   components: ["year", "month", "day", "time", "seconds", "weekday"],
+ *   useChineseFormat: { time: true, weekday: true }
+ * })
+ * // => "2025/06/12 12時30分45秒 星期四" (Chinese time and weekday)
+ *
+ * @example
+ * adjustDateTime("invalid-date", { days: 5 })
  * // => ""
  */
 export function adjustDateTime(
@@ -247,7 +306,13 @@ export function adjustDateTime(
   } = {},
   formatOptions: {
     components?: ("year" | "month" | "day" | "weekday" | "time" | "seconds")[];
-    useChineseFormat?: boolean;
+    useChineseFormat?:
+      | boolean
+      | {
+          date?: boolean;
+          time?: boolean;
+          weekday?: boolean;
+        };
     separator?: string;
     roc?: boolean;
   } = {}
@@ -297,7 +362,7 @@ export function adjustDateTime(
   }
 
   // 回傳字串
-  return formatDateTime(newDate, {
+  return formatDate(newDate, {
     components: ["year", "month", "day"], // Default components
     ...formatOptions,
   });
