@@ -1,58 +1,123 @@
 import { isValidDate } from "./validations";
 
 /**
- * 將日期或時間格式化為指定的字串格式（支援西元年、民國年、星期、時間等）
+ * @description 格式化日期時間為指定格式的字串
  *
- * @param {Date | string} date - 要格式化的日期，可以是 `Date` 物件或日期字串（格式為 YYYY-MM-DD 或 YYYY/MM/DD）
- * @param {Object} [options] - 格式化選項
- * @param {string[]} [options.components=["year", "month", "day"]] - 要包含的日期或時間組件，可選值為 "year"、"month"、"day"、"weekday"、"time"、"seconds"
- * @param {boolean} [options.useChineseFormat=false] - 是否使用中文格式（例如 "x月" 或 "星期x"）
- * @param {string} [options.separator="/"] - 年月日之間的分隔符號，預設為 "/"
- * @param {boolean} [options.roc=false] - 是否使用民國年格式（YYY），預設為 false
- * @returns {string} 格式化後的日期或時間字串；若輸入無效或民國年 <= 1，則回傳空字串
- *
- * @example
- * formatDate(new Date("2025-06-12"));
- * // => "2025/06/12"
- *
- * @example
- * formatDate("2025-06-12", { separator: ".", components: ["year", "month", "day", "time"] });
- * // => "2025.06.12 00:00"
- *
- * @example
- * formatDate("2023-01-01T10:05:30", { components: ["year", "month", "day", "time", "seconds"] });
- * // => "2023/01/01 10:05:30"
- *
- * @example
- * formatDate("2025-06-12", { roc: true });
- * // => "114/06/12"
+ * @param {Date | string} date - 要格式化的日期，可以是 Date 物件或日期字串
+ * @param {Object} [options={}] - 格式化選項
+ * @param {string[]} [options.components=["year", "month", "day"]] - 要包含的日期時間組件
+ *   - "year": 年份
+ *   - "month": 月份
+ *   - "day": 日期
+ *   - "weekday": 星期
+ *   - "time": 時間（時:分）
+ *   - "seconds": 秒數（需搭配 "time" 使用）
+ * @param {boolean | Object} [options.useChineseFormat=false] - 中文格式設定
+ *   - boolean: true 全部中文化，false 全部英文格式
+ *   - Object: 彈性設定各部分是否中文化
+ *     - date?: boolean - 日期部分是否中文化（年月日）
+ *     - time?: boolean - 時間部分是否中文化（時分秒）
+ *     - weekday?: boolean - 星期部分是否中文化（星期X vs (X)）
+ * @param {string} [options.separator="/"] - 日期組件間的分隔符號（僅在非中文格式時使用）
+ * @param {boolean} [options.roc=false] - 是否使用民國紀年
+ * @returns {string} 格式化後的日期時間字串，各部分以空格分隔；若輸入無效則返回空字串
  *
  * @example
- * formatDate("1912-01-01", { roc: true });
- * // => ""（民國 1 年視為無效）
+ * // 基本用法 - 預設格式
+ * formatDate(new Date("2025-06-18"))
+ * // => "2025/06/18"
  *
  * @example
- * formatDate("2024-02-20", { components: ["year", "month", "day", "weekday"], useChineseFormat: true });
- * // => "2024/02/20 (二)"
+ * // 包含時間
+ * formatDate(new Date("2025-06-18T14:30:45"), {
+ *   components: ["year", "month", "day", "time", "seconds"]
+ * })
+ * // => "2025/06/18 14:30:45"
  *
  * @example
- * formatDate("2025-06-12", { components: ["weekday"], useChineseFormat: true });
- * // => "星期四"
+ * // 包含星期
+ * formatDate(new Date("2025-06-18"), {
+ *   components: ["year", "month", "day", "weekday"]
+ * })
+ * // => "2025/06/18 (三)"
  *
  * @example
- * formatDate("2025-06-12", { components: ["month"], useChineseFormat: true });
- * // => "6月"
+ * // 完整格式
+ * formatDate(new Date("2025-06-18T14:30:45"), {
+ *   components: ["year", "month", "day", "time", "seconds", "weekday"]
+ * })
+ * // => "2025/06/18 14:30:45 (三)"
  *
  * @example
- * formatDate("2025-06-12", { components: ["year"] });
- * // => "2025"
+ * // 自訂分隔符
+ * formatDate(new Date("2025-06-18"), { separator: "-" })
+ * // => "2025-06-18"
  *
  * @example
- * formatDate("2025-06-12", { components: ["year"], roc: true });
- * // => "114"
+ * // 民國紀年
+ * formatDate(new Date("2025-06-18"), { roc: true })
+ * // => "114/06/18"
  *
  * @example
- * formatDate("0001-01-01T00:00:00");
+ * // 全部中文格式
+ * formatDate(new Date("2025-06-18T14:30:45"), {
+ *   components: ["year", "month", "day", "time", "seconds", "weekday"],
+ *   useChineseFormat: true
+ * })
+ * // => "2025年6月18日 14時30分45秒 星期三"
+ *
+ * @example
+ * // 只有日期中文化
+ * formatDate(new Date("2025-06-18T14:30:45"), {
+ *   components: ["year", "month", "day", "time", "weekday"],
+ *   useChineseFormat: { date: true }
+ * })
+ * // => "2025年6月18日 14:30 (三)"
+ *
+ * @example
+ * // 只有時間中文化
+ * formatDate(new Date("2025-06-18T14:30:45"), {
+ *   components: ["year", "month", "day", "time", "seconds"],
+ *   useChineseFormat: { time: true }
+ * })
+ * // => "2025/06/18 14時30分45秒"
+ *
+ * @example
+ * // 只有星期中文化
+ * formatDate(new Date("2025-06-18"), {
+ *   components: ["year", "month", "day", "weekday"],
+ *   useChineseFormat: { weekday: true }
+ * })
+ * // => "2025/06/18 星期三"
+ *
+ * @example
+ * // 混合中文格式
+ * formatDate(new Date("2025-06-18T14:30:45"), {
+ *   components: ["year", "month", "day", "time", "seconds", "weekday"],
+ *   useChineseFormat: { date: true, weekday: true }
+ * })
+ * // => "2025年6月18日 14:30:45 星期三"
+ *
+ * @example
+ * // 民國年 + 中文格式
+ * formatDate(new Date("2025-06-18"), {
+ *   roc: true,
+ *   useChineseFormat: { date: true }
+ * })
+ * // => "114年6月18日"
+ *
+ * @example
+ * // 處理字串輸入
+ * formatDate("2025-06-18T14:30:45")
+ * // => "2025/06/18"
+ *
+ * @example
+ * // 無效輸入
+ * formatDate("")
+ * // => ""
+ * formatDate("invalid-date")
+ * // => ""
+ * formatDate(new Date("invalid"))
  * // => ""
  */
 export function formatDate(
@@ -108,6 +173,7 @@ export function formatDate(
   let timePart = "";
   let weekdayPart = "";
 
+  // 各元件部位根據條件做調整
   for (const component of components) {
     switch (component) {
       case "year":
@@ -179,7 +245,7 @@ export function formatDate(
 }
 
 /**
- * 將民國曆日期字串 (YYY/MM/DD) 轉換為西元日期字串 (YYYY/MM/DD)
+ * @description 將民國曆日期字串 (YYY/MM/DD) 轉換為西元日期字串 (YYYY/MM/DD)
  *
  * @param {string} rocDate - 民國年格式的日期字串，例如 "112/10/05"
  * @param {string} [separator="/"] - 西元日期輸出時的分隔符號，預設為 "/"
@@ -230,7 +296,7 @@ export function convertROCToGregorian(
 }
 
 /**
- * 調整日期時間並回傳格式化的字串，支援加減年、月、天、時、分、秒
+ * @description 調整日期時間並回傳格式化的字串，支援加減年、月、天、時、分、秒
  *
  * @param {Date | string} date - 要調整的日期，可以是 `Date` 物件或日期字串（格式為 YYYY-MM-DD 或 YYYY/MM/DD）
  * @param {Object} [adjustments] - 調整選項
