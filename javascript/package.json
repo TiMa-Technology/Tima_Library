@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "description": "Javascript utils for tima only.",
   "main": "dist/main.js",
+  "module": "./dist/main.mjs", 
   "types": "dist/main.d.ts",
   "files": [
-    "dist",
+    "dist/**/*",
     "README.md"
   ],
   "private":"false",

@@ -3,12 +3,20 @@ name: CI & Build
 on:
   push:
     branches: [main, dev]
+    paths: [ 'javascript/**' ]  # 只有 javascript 目錄變動才觸發
   pull_request:
     branches: [main, dev]
+    paths: [ 'javascript/**' ]  # 只有 javascript 目錄變動才觸發
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    # 設定工作目錄為 javascript
+    defaults:
+      run:
+        working-directory: ./javascript
 
     steps:
       - name: 📥 取得原始碼
@@ -19,6 +27,7 @@ jobs:
         with:
           node-version: '>=22.14.0'
           cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
 
       - name: 📦 安裝套件
         run: npm ci
