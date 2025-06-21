@@ -132,6 +132,19 @@ export function camelToSnake(str: string): string {
 }
 
 /**
+ * 將 snake_case 字串轉換為 camelCase
+ * @param str snake_case 字串
+ * @returns camelCase 字串
+ * @example
+ * snakeToCamel("my_variable_name") // "myVariableName"
+ */
+export function snakeToCamel(str: string): string {
+  return str
+    .replace(/^_+|_+$/g, "") // 移除開頭和結尾的底線
+    .replace(/_+(.)/g, (_, char) => char.toUpperCase()); // 轉換中間的底線為駝峰
+}
+
+/**
  * 生成隨機的十六進位顏色碼
  * @returns 顏色字串（如 "#a3e12f"）
  * @example
