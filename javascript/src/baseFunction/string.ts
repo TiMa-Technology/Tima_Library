@@ -9,7 +9,11 @@
  * padLeft('7', 3, '0'); // 回傳 '007'
  */
 export function padLeft(str: string, length: number, padChar: string): string {
-  return padChar.repeat(Math.max(0, length - str.length)) + str;
+  const padLength = Math.max(0, length - str.length);
+  const fullRepeats = Math.floor(padLength / padChar.length);
+  const remainder = padLength % padChar.length;
+
+  return padChar.repeat(fullRepeats) + padChar.slice(0, remainder) + str;
 }
 
 /**
