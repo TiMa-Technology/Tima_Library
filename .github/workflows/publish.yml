@@ -50,6 +50,7 @@ jobs:
           path: ./javascript/coverage/
       
       - name: Publish to NPM
+        if: (github.ref == 'refs/heads/main' && github.event_name == 'push') || github.event_name == 'workflow_dispatch' # 只在合併到主分支時才發布
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
