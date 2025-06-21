@@ -1,17 +1,23 @@
 {
-  "name": "tima-lib",
+  "name": "@tima_tech/lib",
   "version": "1.0.0",
   "description": "Javascript utils for tima only.",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/main.js",
+  "types": "dist/main.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "README.md"
   ],
+  "private":"false",
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "scripts": {
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
-    "build": "tsup src/index.js --dts",
+    "build": "tsup src/main.ts --dts --out-dir dist --format esm",
+    "clean": "rm -rf dist coverage",
     "test": "vitest",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest run --coverage"

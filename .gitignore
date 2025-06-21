@@ -403,3 +403,4 @@ FodyWeavers.xsd
 node_modules/
 
 .env
+.npmrc
