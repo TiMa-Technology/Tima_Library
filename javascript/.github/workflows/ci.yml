@@ -1,0 +1,45 @@
+name: CI & Build
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 取得原始碼
+        uses: actions/checkout@v4
+
+      - name: 🟢 設定 Node.js (版本 22.14.0 以上）
+        uses: actions/setup-node@v4
+        with:
+          node-version: '>=22.14.0'
+          cache: 'npm'
+
+      - name: 📦 安裝套件
+        run: npm ci
+
+      - name: 🔍 稽核程式碼風格 (ESLint)
+        run: npm run lint
+
+      - name: ✅ 執行測試（含 coverage)
+        run: npm run test:coverage
+
+      - name: 🛠️ 建置專案
+        run: npm run build
+
+      - name: 📤 上傳 coverage 報告 (HTML)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+      
+      - name: Publish to NPM
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
