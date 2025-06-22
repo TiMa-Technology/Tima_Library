@@ -48,13 +48,19 @@ jobs:
         with:
           name: coverage-report
           path: ./javascript/coverage/
-
-      - name: 📦 自動更新版本
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: npm version patch
       
-      - name: Publish to NPM
-        if: (github.ref == 'refs/heads/main' && github.event_name == 'push') || github.event_name == 'workflow_dispatch' # 只在合併到主分支時才發布
+      - name: 📦 檢查版本是否已存在
+        id: check_version
+        run: |
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          if npm view @tima_technology/lib@$CURRENT_VERSION > /dev/null 2>&1; then
+            echo "Version $CURRENT_VERSION already exists"
+            echo "should_publish=false" >> $GITHUB_OUTPUT
+          else
+            echo "Version $CURRENT_VERSION is new"
+            echo "should_publish=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 📦 發布到 NPM
+        if: steps.check_version.outputs.should_publish == 'true' && github.ref == 'refs/heads/main'
         run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
