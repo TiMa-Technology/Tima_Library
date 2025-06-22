@@ -1,5 +1,5 @@
 {
-  "name": "@tima_tech/lib",
+  "name": "@tima_technology/lib",
   "version": "1.0.0",
   "description": "Javascript utils for tima only.",
   "main": "dist/main.js",
