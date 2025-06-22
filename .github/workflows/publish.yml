@@ -48,6 +48,10 @@ jobs:
         with:
           name: coverage-report
           path: ./javascript/coverage/
+
+      - name: 📦 自動更新版本
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: npm version patch
       
       - name: Publish to NPM
         if: (github.ref == 'refs/heads/main' && github.event_name == 'push') || github.event_name == 'workflow_dispatch' # 只在合併到主分支時才發布
