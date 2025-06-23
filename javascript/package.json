@@ -1,13 +1,14 @@
 {
   "name": "@tima_technology/lib",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Javascript utils for tima only.",
   "main": "dist/main.js",
   "module": "./dist/main.mjs", 
   "types": "dist/main.d.ts",
   "files": [
     "dist/**/*",
-    "README.md"
+    "README.md",
+    "package.json"
   ],
   "publishConfig": {
     "access": "public"

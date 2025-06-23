@@ -53,14 +53,32 @@ jobs:
         id: check_version
         run: |
           CURRENT_VERSION=$(node -p "require('./package.json').version")
-          if npm view @tima_technology/lib@$CURRENT_VERSION > /dev/null 2>&1; then
-            echo "Version $CURRENT_VERSION already exists"
+          echo "Current version: $CURRENT_VERSION"
+          
+          # 使用更可靠的版本檢查方式
+          if npm show @tima_technology/lib@$CURRENT_VERSION version 2>/dev/null; then
+            echo "❌ Version $CURRENT_VERSION already exists on NPM"
             echo "should_publish=false" >> $GITHUB_OUTPUT
+            echo "version_exists=true" >> $GITHUB_OUTPUT
           else
-            echo "Version $CURRENT_VERSION is new"
+            echo "✅ Version $CURRENT_VERSION is new"
             echo "should_publish=true" >> $GITHUB_OUTPUT
+            echo "version_exists=false" >> $GITHUB_OUTPUT
           fi
+        
+          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
 
       - name: 📦 發布到 NPM
         if: steps.check_version.outputs.should_publish == 'true' && github.ref == 'refs/heads/main'
         run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: 📝 顯示發布結果
+        if: github.ref == 'refs/heads/main'
+        run: |
+          if [ "${{ steps.check_version.outputs.version_exists }}" == "true" ]; then
+            echo "🔄 版本 ${{ steps.check_version.outputs.current_version }} 已存在，跳過發布"
+          else
+            echo "🚀 版本 ${{ steps.check_version.outputs.current_version }} 發布成功！"
+          fi
