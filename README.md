@@ -2,7 +2,7 @@
 
 本倉庫是公司庫專案的核心工具庫，目前包含 `JavaScript` 和 `C#` 兩種語言的工具庫。專案結構設計旨在支持模組化開發、清晰的文件撰寫以及簡化的維護流程。
 
-## 快速導覽 🛠️
+## Quick Start 🛠️
 
 - [如何維護專案](#如何維護專案)
   - [設置開發環境](#設置開發環境)
@@ -31,8 +31,8 @@
 ### 貢獻程式碼
 - 為新功能或錯誤修復創建新分支：`git checkout -b feature/your-feature-name`。
 - 遵循各語言 `README` 中指定的程式碼規範。
-- 為新功能或錯誤修復撰寫單元測試 (optional)。
-- 在本地運行測試以確保無回歸：(optional)
+- 為新功能或錯誤修復撰寫單元測試 。
+- 在本地運行測試以確保無回歸：(請切換至各資料夾)
   - JavaScript：使用 `npm test`（詳見 `javascript/README.md`）。
   - C#：使用 `dotnet test`（詳見 `csharp/README.md`）。
 - 使用清晰、簡潔的提交訊息，遵循 [Commits 規範](https://github.com/TiMa-Technology/tiMa-Docs/blob/main/Git/commit_message.md) 格式，例如 `feat: 新增工具函數`。
@@ -40,12 +40,12 @@
 ### 提交變更
 - 將分支推送到倉庫：`git push origin feature/your-feature-name`。
 - **創建拉取請求（PR），並詳細描述你的變更。**
-- ~~確保 PR 通過所有 CI 檢查（例如程式碼檢查、測試）。~~
+- **確保 PR 通過所有 CI 檢查（例如程式碼檢查、測試）。**
 - **至少請求一名團隊成員進行審查(code review)。**
 
 ### 發布更新
 - 審查通過後，將 PR 合併到 `main` 分支。
-- 更新各庫的版本號（例如 JavaScript 的 `package.json`、C# 的 `.csproj`）。
+- 更新各庫的版本號（JavaScript 的 `package.json`、C# 的 `.csproj`）。
 - 標記版本並按需發布（詳見各語言的 `README`）。
 
 ## 撰寫文件
@@ -68,7 +68,7 @@
   - C#：使用 XML 文件註釋記錄方法和 Class。
 
 ### 如何撰寫文件
-1. **更新根 README**：
+1. **更新 ROOT README**：
    - 僅在專案發生重大變更（例如新增語言、重大重構）時更新本文件。
    - 保持簡潔，連結到各 README 以獲取詳細資訊。
    - 使用 Markdown 格式，包含清晰的標題和列表。
