@@ -1,6 +1,6 @@
 ﻿# @tima_technology/lib
 
-[![npm version](https://badge.fury.io/js/%40tima_technology%2Flib.svg)](https://badge.fury.io/js/%40tima_technology%2Flib) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![npm version](https://badge.fury.io/js/@tima_technology%2Flib.svg)](https://badge.fury.io/js/@tima_technology%2Flib) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Tima JavaScript 工具庫是一組模組化的工具函數，適用於 Javascript 開發，採用 ES6+ 語法，無外部框架依賴，可輕鬆整合至任何 JavaScript 環境。提供日期格式化、數字處理、資料驗證等功能。
 
