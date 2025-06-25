@@ -15,6 +15,10 @@ import {
   convertArrayToObject,
   objToQueryString,
   snakeToCamel,
+  debounce,
+  debounceAsync,
+  throttle,
+  throttleAnimationFrame,
 } from "../utils";
 
 describe("newGuid", () => {
@@ -409,5 +413,298 @@ describe("objToQueryString", () => {
     const result = objToQueryString(obj);
     expect(result).toContain("name=%E6%B8%AC%E8%A9%A6");
     expect(result).toContain("city=%E5%8F%B0%E5%8C%97");
+  });
+});
+
+describe("debounce", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("應該延遲執行函數", () => {
+    const mockFn = vi.fn();
+    const debouncedFn = debounce(mockFn, 100);
+
+    debouncedFn("test");
+    expect(mockFn).not.toHaveBeenCalled();
+
+    vi.advanceTimersByTime(100);
+    expect(mockFn).toHaveBeenCalledWith("test");
+    expect(mockFn).toHaveBeenCalledTimes(1);
+  });
+
+  it("應該只執行最後一次調用", () => {
+    const mockFn = vi.fn();
+    const debouncedFn = debounce(mockFn, 100);
+
+    debouncedFn("first");
+    debouncedFn("second");
+    debouncedFn("third");
+
+    vi.advanceTimersByTime(100);
+    expect(mockFn).not.toHaveBeenCalledWith("first");
+    expect(mockFn).not.toHaveBeenCalledWith("second");
+    expect(mockFn).toHaveBeenCalledWith("third");
+    expect(mockFn).toHaveBeenCalledTimes(3); // 會被呼叫三次但其他時間內的都會被直接清除
+  });
+
+  it("應該支援立即執行模式", () => {
+    const mockFn = vi.fn();
+    const debouncedFn = debounce(mockFn, 100, true);
+
+    debouncedFn("immediate");
+    expect(mockFn).toHaveBeenCalledWith("immediate");
+    expect(mockFn).toHaveBeenCalledTimes(1);
+
+    // 在冷卻期間的調用應該被忽略
+    debouncedFn("ignored");
+    vi.advanceTimersByTime(50);
+    expect(mockFn).toHaveBeenCalledTimes(1);
+
+    // 冷卻期結束後應該可以再次調用
+    vi.advanceTimersByTime(51);
+    debouncedFn("after-cooldown");
+    expect(mockFn).toHaveBeenCalledWith("after-cooldown");
+    expect(mockFn).toHaveBeenCalledTimes(2);
+  });
+
+  it("cancel 方法應該取消待執行的調用", () => {
+    const mockFn = vi.fn();
+    const debouncedFn = debounce(mockFn, 100);
+
+    debouncedFn("test");
+    debouncedFn.cancel();
+
+    vi.advanceTimersByTime(100);
+    expect(mockFn).not.toHaveBeenCalled();
+  });
+
+  it("flush 方法應該立即執行", () => {
+    const mockFn = vi.fn().mockReturnValue("result");
+    const debouncedFn = debounce(mockFn, 100);
+
+    debouncedFn("test");
+    const result = debouncedFn.flush("flush-test");
+
+    expect(result).toBe("result");
+    expect(mockFn).toHaveBeenCalledWith("flush-test");
+    expect(mockFn).toHaveBeenCalledTimes(1);
+  });
+
+  it("pending 方法應該正確回報狀態", () => {
+    const mockFn = vi.fn();
+    const debouncedFn = debounce(mockFn, 100);
+
+    expect(debouncedFn.pending()).toBe(false);
+
+    debouncedFn("test");
+    expect(debouncedFn.pending()).toBe(true);
+
+    vi.advanceTimersByTime(100);
+    expect(debouncedFn.pending()).toBe(false);
+  });
+});
+
+describe("debounceAsync", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("應該處理 Promise 返回值", async () => {
+    const mockAsyncFn = vi.fn().mockResolvedValue("async-result");
+    const debouncedFn = debounceAsync(mockAsyncFn, 100);
+
+    const promise = debouncedFn("test");
+    vi.advanceTimersByTime(100);
+
+    const result = await promise;
+    expect(result).toBe("async-result");
+    expect(mockAsyncFn).toHaveBeenCalledWith("test");
+  });
+
+  it("應該取消之前的 Promise", async () => {
+    const mockAsyncFn = vi.fn().mockResolvedValue("result");
+    const debouncedFn = debounceAsync(mockAsyncFn, 100);
+
+    const promise1 = debouncedFn("first");
+    const promise2 = debouncedFn("second");
+
+    vi.advanceTimersByTime(100);
+
+    await expect(promise1).rejects.toThrow("Debounced function called again");
+    await expect(promise2).resolves.toBe("result");
+  });
+});
+
+describe("throttle", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("應該限制函數執行頻率", () => {
+    const mockFn = vi.fn();
+    const throttledFn = throttle(mockFn, 100);
+
+    // 第一次調用應該立即執行（leading = true）
+    throttledFn("first");
+    expect(mockFn).toHaveBeenCalledWith("first");
+    expect(mockFn).toHaveBeenCalledTimes(1);
+
+    // 在節流期間的調用不會立即執行
+    throttledFn("second");
+    throttledFn("third");
+    expect(mockFn).toHaveBeenCalledTimes(1);
+
+    // 節流期間結束後，應該執行最後一次調用（trailing = true）
+    vi.advanceTimersByTime(100);
+    expect(mockFn).toHaveBeenCalledWith("third");
+    expect(mockFn).toHaveBeenCalledTimes(2);
+  });
+
+  it("應該支援 leading: false 選項", () => {
+    const mockFn = vi.fn();
+    const throttledFn = throttle(mockFn, 100, { leading: false });
+
+    throttledFn("first");
+    expect(mockFn).not.toHaveBeenCalled();
+
+    vi.advanceTimersByTime(100);
+    expect(mockFn).toHaveBeenCalledWith("first");
+    expect(mockFn).toHaveBeenCalledTimes(1);
+  });
+
+  it("應該支援 trailing: false 選項", () => {
+    const mockFn = vi.fn();
+    const throttledFn = throttle(mockFn, 100, { trailing: false });
+
+    // 第一次調用立即執行
+    throttledFn("first");
+    expect(mockFn).toHaveBeenCalledWith("first");
+    expect(mockFn).toHaveBeenCalledTimes(1);
+
+    // 後續調用在節流期間不會執行
+    throttledFn("second");
+    throttledFn("third");
+
+    vi.advanceTimersByTime(100);
+    // trailing 為 false，所以不會執行最後的調用
+    expect(mockFn).toHaveBeenCalledTimes(1);
+  });
+
+  it("應該支援 leading: false, trailing: false", () => {
+    const mockFn = vi.fn();
+    const throttledFn = throttle(mockFn, 100, {
+      leading: false,
+      trailing: false,
+    });
+
+    throttledFn("test");
+    vi.advanceTimersByTime(100);
+
+    // 兩個選項都為 false，函數不應該被執行
+    expect(mockFn).not.toHaveBeenCalled();
+  });
+
+  it("cancel 方法應該取消待執行的調用", () => {
+    const mockFn = vi.fn();
+    const throttledFn = throttle(mockFn, 100);
+
+    throttledFn("first");
+    throttledFn("second");
+    throttledFn.cancel();
+
+    vi.advanceTimersByTime(100);
+    // 只有第一次調用被執行，trailing 調用被取消
+    expect(mockFn).toHaveBeenCalledTimes(1);
+    expect(mockFn).toHaveBeenCalledWith("first");
+  });
+
+  it("flush 方法應該立即執行待處理的調用", () => {
+    const mockFn = vi.fn().mockReturnValue("result");
+    const throttledFn = throttle(mockFn, 100);
+
+    throttledFn("first");
+    throttledFn("second");
+
+    const result = throttledFn.flush();
+    expect(result).toBe("result");
+    expect(mockFn).toHaveBeenCalledWith("second");
+    expect(mockFn).toHaveBeenCalledTimes(2); // leading + flush
+  });
+
+  it("pending 方法應該正確回報狀態", () => {
+    const mockFn = vi.fn();
+    const throttledFn = throttle(mockFn, 100);
+
+    expect(throttledFn.pending()).toBe(false);
+
+    throttledFn("first");
+    throttledFn("second");
+    expect(throttledFn.pending()).toBe(true);
+
+    vi.advanceTimersByTime(100);
+    expect(throttledFn.pending()).toBe(false);
+  });
+
+  it("應該在連續調用後正確重置", () => {
+    const mockFn = vi.fn();
+    const throttledFn = throttle(mockFn, 100);
+
+    // 第一輪調用
+    throttledFn("first");
+    vi.advanceTimersByTime(100);
+    expect(mockFn).toHaveBeenCalledTimes(1);
+
+    // 等待足夠時間確保節流重置
+    vi.advanceTimersByTime(100);
+
+    // 第二輪調用
+    throttledFn("second");
+    expect(mockFn).toHaveBeenCalledWith("second");
+    expect(mockFn).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("throttleAnimationFrame", () => {
+  beforeEach(() => {
+    // Mock requestAnimationFrame
+    global.requestAnimationFrame = vi.fn((callback) => {
+      return setTimeout(callback, 16) as any; // 模擬 ~60fps
+    });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("應該使用 requestAnimationFrame 節流", () => {
+    const mockFn = vi.fn();
+    const throttledFn = throttleAnimationFrame(mockFn);
+
+    throttledFn("first");
+    throttledFn("second");
+    throttledFn("third");
+
+    expect(global.requestAnimationFrame).toHaveBeenCalledTimes(1);
+    expect(mockFn).not.toHaveBeenCalled();
+
+    // 觸發 requestAnimationFrame 回調
+    const callback = (global.requestAnimationFrame as any).mock.calls[0][0];
+    callback();
+
+    expect(mockFn).toHaveBeenCalledWith("third");
+    expect(mockFn).toHaveBeenCalledTimes(1);
   });
 });
