@@ -1,6 +1,6 @@
 import type { QueryState } from "../src/browserUtils";
 
-export type ApiResponse<T = any> = {
+export type ApiResponse<T = unknown> = {
   errorMessage?: string;
 } & (T extends any[]
   ? { itemList: Partial<T> } & Record<string, unknown> // 多筆資料，附帶其他欄位
