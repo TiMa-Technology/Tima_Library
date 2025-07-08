@@ -493,3 +493,80 @@ export function throttleAnimationFrame<T extends (...args: any[]) => any>(
     }
   };
 }
+
+/**
+ * 深層比較兩個值是否相等。
+ * 支援基本類型、Array、Object，並處理 NaN === NaN 的情況。
+ *
+ * @param value - 要比較的第一個值
+ * @param other - 要比較的第二個值
+ * @returns 是否深層相等
+ * @example
+ * isEqual({ a: 1, b: [2, 3] }, { a: 1, b: [2, 3] }) // true
+ * isEqual([1, 2, 3], [1, 2, 3]) // true
+ * isEqual(NaN, NaN) // true
+ */
+export function isEqual(value: unknown, other: unknown): boolean {
+  if (typeof value !== "object" && typeof other !== "object") {
+    const isValueNaN = typeof value === "number" && Number.isNaN(value);
+    const isOtherNaN = typeof other === "number" && Number.isNaN(other);
+
+    if (isValueNaN && isOtherNaN) {
+      return true;
+    }
+
+    return value === other;
+  }
+
+  if (value === null && other === null) {
+    return true;
+  }
+
+  if (typeof value !== typeof other || value === null || other === null) {
+    return false;
+  }
+
+  if (value === other) {
+    return true;
+  }
+
+  if (Array.isArray(value) && Array.isArray(other)) {
+    if (value.length !== other.length) {
+      return false;
+    }
+
+    for (let i = 0; i < value.length; i++) {
+      if (!isEqual(value[i], other[i])) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  if (Array.isArray(value) || Array.isArray(other)) {
+    return false;
+  }
+
+  const valueKeys = Object.keys(value as Record<string, unknown>);
+  const otherKeys = Object.keys(other as Record<string, unknown>);
+
+  if (valueKeys.length !== otherKeys.length) {
+    return false;
+  }
+
+  for (const key of valueKeys) {
+    if (!(key in (other as Record<string, unknown>))) {
+      return false;
+    }
+
+    const val = (value as Record<string, unknown>)[key];
+    const oth = (other as Record<string, unknown>)[key];
+
+    if (!isEqual(val, oth)) {
+      return false;
+    }
+  }
+
+  return true;
+}

@@ -19,6 +19,7 @@ import {
   debounceAsync,
   throttle,
   throttleAnimationFrame,
+  isEqual,
 } from "../utils";
 
 describe("newGuid", () => {
@@ -706,5 +707,62 @@ describe("throttleAnimationFrame", () => {
 
     expect(mockFn).toHaveBeenCalledWith("third");
     expect(mockFn).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("isEqual", () => {
+  it("應合理比對相同的原始型別", () => {
+    expect(isEqual(1, 1)).toBe(true);
+    expect(isEqual("abc", "abc")).toBe(true);
+    expect(isEqual(true, true)).toBe(true);
+  });
+
+  it("應返回 false 比對不同的原始型別", () => {
+    expect(isEqual(1, 2)).toBe(false);
+    expect(isEqual("abc", "def")).toBe(false);
+    expect(isEqual(true, false)).toBe(false);
+  });
+
+  it("應正確處理 NaN", () => {
+    expect(isEqual(NaN, NaN)).toBe(true);
+    expect(isEqual(NaN, 1)).toBe(false);
+    expect(isEqual(1, NaN)).toBe(false);
+  });
+
+  it("應正確比較深度巢狀陣列", () => {
+    expect(isEqual([1, 2, 3], [1, 2, 3])).toBe(true);
+    expect(isEqual([1, 2, 3], [3, 2, 1])).toBe(false);
+    expect(isEqual([1, [2, 3]], [1, [2, 3]])).toBe(true);
+  });
+
+  it("應正確比較巢狀物件", () => {
+    expect(isEqual({ a: 1, b: 2 }, { a: 1, b: 2 })).toBe(true);
+    expect(isEqual({ a: 1 }, { a: 1, b: 2 })).toBe(false);
+    expect(isEqual({ a: { b: 2 } }, { a: { b: 2 } })).toBe(true);
+    expect(isEqual({ a: { b: 2 } }, { a: { b: 3 } })).toBe(false);
+  });
+
+  it("應返回錯誤比較陣列跟物件", () => {
+    expect(isEqual([], {})).toBe(false);
+    expect(isEqual({}, [])).toBe(false);
+  });
+
+  it("應返回正確比較兩個 NULL", () => {
+    expect(isEqual(null, null)).toBe(true);
+  });
+
+  it("應返回錯誤比較 null 跟物件", () => {
+    expect(isEqual(null, {})).toBe(false);
+    expect(isEqual({}, null)).toBe(false);
+  });
+
+  it("應返回錯誤比較不同的 KEY 值", () => {
+    expect(isEqual({ a: 1 }, { b: 1 })).toBe(false);
+  });
+
+  it("應正確比較深度巢狀的結構", () => {
+    const a = { x: [1, 2, { y: "test" }], z: { k: null } };
+    const b = { x: [1, 2, { y: "test" }], z: { k: null } };
+    expect(isEqual(a, b)).toBe(true);
   });
 });
