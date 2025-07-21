@@ -36,6 +36,9 @@ jobs:
       - name: 🔍 稽核程式碼風格 (ESLint)
         run: npm run lint
 
+      - name: 📝 檢查程式碼格式 (Prettier)
+        run: npm run check-format  
+
       - name: ✅ 執行測試（含 coverage)
         run: npm run test:coverage
 
