@@ -22,8 +22,8 @@
     "test": "vitest",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest run --coverage",
-    "format": "prettier --write 'src/**/*.{js,ts,json,md}'",
-    "check-format": "prettier --check .",
+    "format": "prettier --write 'src/**/*.{js,ts}'",
+    "check-format": "prettier --check 'src/**/*.{js,ts}'",
     "local-release": "changeset version && changeset publish",
     "prepublishOnly": "npm run build"
   },

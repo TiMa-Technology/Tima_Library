@@ -41,16 +41,20 @@ npm install @tima_technology/lib
 以下為簡單範例，展示如何使用核心功能：
 
 ```javascript
-import { formatDate, convertROCToGregorian, adjustDateTime } from '@tima_technology/lib';
+import {
+  formatDate,
+  convertROCToGregorian,
+  adjustDateTime,
+} from "@tima_technology/lib";
 
 // 格式化日期
-console.log(formatDate(new Date('2025-06-22'))); // "2025/06/22"
+console.log(formatDate(new Date("2025-06-22"))); // "2025/06/22"
 
 // 民國年轉西元年
-console.log(convertROCToGregorian('114/06/22')); // "2025/06/22"
+console.log(convertROCToGregorian("114/06/22")); // "2025/06/22"
 
 // 調整日期（增加 5 天）
-console.log(adjustDateTime('2025-06-22', { days: 5 })); // "2025/06/27"
+console.log(adjustDateTime("2025-06-22", { days: 5 })); // "2025/06/27"
 ```
 
 ---
@@ -136,7 +140,7 @@ console.log(adjustDateTime('2025-06-22', { days: 5 })); // "2025/06/27"
 <details>
   <summary>WebSocket Client</summary>
 
-- WebSocketClient 
+- WebSocketClient
 
 </details>
 
@@ -145,9 +149,9 @@ console.log(adjustDateTime('2025-06-22', { days: 5 })); // "2025/06/27"
 <summary>日誌記錄（infoLogger）</summary>
 
 - InfoLogger
-- getPlatform 
+- getPlatform
 
-</details>     
+</details>
 
 <details>
       <summary>導航工具（navigation）</summary>
@@ -171,39 +175,51 @@ console.log(adjustDateTime('2025-06-22', { days: 5 })); // "2025/06/27"
 ### Node.js
 
 ```javascript
-import { formatDate, convertROCToGregorian, adjustDateTime } from '@tima_technology/lib';
+import {
+  formatDate,
+  convertROCToGregorian,
+  adjustDateTime,
+} from "@tima_technology/lib";
 
 // 格式化日期
-console.log(formatDate(new Date('2025-06-22'))); // "2025/06/22"
+console.log(formatDate(new Date("2025-06-22"))); // "2025/06/22"
 
 // 民國年轉西元年
-console.log(convertROCToGregorian('114/06/22')); // "2025/06/22"
+console.log(convertROCToGregorian("114/06/22")); // "2025/06/22"
 
 // 調整日期（增加 5 天）
-console.log(adjustDateTime('2025-06-22', { days: 5 })); // "2025/06/27"
+console.log(adjustDateTime("2025-06-22", { days: 5 })); // "2025/06/27"
 ```
 
 ### TypeScript
 
 ```typescript
-import { formatDate, convertROCToGregorian, adjustDateTime } from '@tima_technology/lib';
+import {
+  formatDate,
+  convertROCToGregorian,
+  adjustDateTime,
+} from "@tima_technology/lib";
 
 // 格式化日期（民國年 + 中文格式）
 console.log(
-  formatDate('2025-06-22', {
+  formatDate("2025-06-22", {
     roc: true,
     useChineseFormat: { date: true },
   })
 ); // "114年6月22日"
 
 // 民國年轉西元年
-console.log(convertROCToGregorian('114/06/22')); // "2025/06/22"
+console.log(convertROCToGregorian("114/06/22")); // "2025/06/22"
 
 // 調整日期（增加 2 小時，包含時間）
 console.log(
-  adjustDateTime('2025-06-22T10:00:00', { hours: 2 }, {
-    components: ['year', 'month', 'day', 'time'],
-  })
+  adjustDateTime(
+    "2025-06-22T10:00:00",
+    { hours: 2 },
+    {
+      components: ["year", "month", "day", "time"],
+    }
+  )
 ); // "2025/06/22 12:00"
 ```
 
@@ -220,9 +236,9 @@ console.log(
 - **按需引入**：
   ```javascript
   // 推薦
-  import { formatNumber } from '@tima_technology/lib';
+  import { formatNumber } from "@tima_technology/lib";
   // 避免
-  import * as TimaUtils from '@tima_technology/lib';
+  import * as TimaUtils from "@tima_technology/lib";
   ```
 - **動態引入**：對不常用功能使用 `import()` 延遲載入。
 - **Tree Shaking**：本套件支援 tree shaking，確保打包時僅包含使用到的程式碼。
@@ -234,17 +250,20 @@ console.log(
 歡迎為本套件貢獻程式碼！請遵循以下流程：
 
 1. **Fork 儲存庫**：
+
    ```bash
    git clone https://github.com/TiMa-Technology/Tima_Library.git
    cd Tima_Library
    ```
 
 2. **創建分支**：
+
    ```bash
    git checkout -b feature/your-feature-name
    ```
 
 3. **程式碼規範**：
+
    - 遵循 [Airbnb JavaScript 風格指南](https://github.com/airbnb/javascript)。
    - 執行 `npm run lint` 檢查程式碼。
    - 每個公開函數需包含 JSDoc 註釋，例如：
@@ -263,10 +282,12 @@ console.log(
      ```
 
 4. **測試**（可選）：
+
    - 使用 Vitest 撰寫單元測試，存放於 `tests/`。
    - 執行測試：`npm test`。
 
 5. **提交變更**：
+
    - 使用規範的提交訊息，例如：
      ```bash
      git commit -m "feat: add formatROCDate function"
