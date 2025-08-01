@@ -195,7 +195,8 @@ export class WebSocketClient {
   }
 
   /**
-   * 建立 WebSocket 連線
+   * 處理 WebSocket 連線，必須在使用前調用，且等待連線成功後才能發送訊息。
+   * @returns Promise<void>
    */
   public async connect(): Promise<void> {
     if (
@@ -205,61 +206,85 @@ export class WebSocketClient {
       return;
     }
 
-    try {
-      this.setState(WebSocketState.CONNECTING);
+    return new Promise((resolve, reject) => {
+      try {
+        this.setState(WebSocketState.CONNECTING);
 
-      if (!("WebSocket" in window)) {
-        throw new Error("瀏覽器不支援 WebSocket");
+        if (!("WebSocket" in window)) {
+          throw new Error("瀏覽器不支援 WebSocket");
+        }
+
+        const url = this.buildWebSocketURL();
+        this.socket = new WebSocket(url);
+
+        // 設置一次性事件監聽器來處理連線結果
+        const onOpen = () => {
+          this.setState(WebSocketState.CONNECTED);
+          this.reconnectAttempts = 0;
+          this.currentReconnectDelay = this.options.initialReconnectDelay;
+
+          // Send login message
+          const loginMessage: WebSocketMessage = {
+            type: "Login",
+            name: this.options.name,
+            memNo: this.options.memNo,
+            notifyClientCountRole: this.options.notifyClientCountRole,
+            notifyClientAddCloseRole: this.options.notifyClientAddCloseRole,
+          };
+          this.send(loginMessage);
+
+          if (this.options.enableHeartCheck) {
+            this.startHeartbeat();
+          }
+
+          console.log(
+            `WebSocket 連線成功${this.options.enableHeartCheck ? "，開始心跳檢查" : ""}`
+          );
+
+          // 清理一次性監聽器
+          this.socket?.removeEventListener("open", onOpen);
+          this.socket?.removeEventListener("error", onError);
+
+          // 設置持久性事件處理器
+          this.setupEventHandlers();
+
+          this.eventHandlers.onOpen?.();
+          resolve(); // 連線成功，resolve Promise
+        };
+
+        const onError = (event: Event) => {
+          this.setState(WebSocketState.ERROR);
+          console.error("WebSocket 建立連線發生錯誤:", event);
+
+          // 清理一次性監聽器
+          this.socket?.removeEventListener("open", onOpen);
+          this.socket?.removeEventListener("error", onError);
+
+          reject(new Error("WebSocket 連線失敗")); // 連線失敗，reject Promise
+        };
+
+        // 添加一次性事件監聽器
+        this.socket.addEventListener("open", onOpen);
+        this.socket.addEventListener("error", onError);
+      } catch (error) {
+        this.setState(WebSocketState.ERROR);
+        console.error("WebSocket 建立連線發生錯誤:", error);
+        reject(error); // 同步錯誤也要 reject
       }
-
-      const url = this.buildWebSocketURL();
-      this.socket = new WebSocket(url);
-      this.setupEventHandlers();
-    } catch (error) {
-      this.setState(WebSocketState.ERROR);
-      console.error("WebSocket 建立連線發生錯誤:", error);
-      await this.handleReconnect();
-    }
+    });
   }
 
   /**
-   * 設置 WebSocket 事件處理
+   * 設置 WebSocket 持久性事件處理（不包含 open 事件，因為已經在 connect 中處理）
    */
   private setupEventHandlers(): void {
     if (!this.socket) return;
 
-    this.socket.addEventListener("open", () => {
-      this.setState(WebSocketState.CONNECTED);
-      this.reconnectAttempts = 0;
-      this.currentReconnectDelay = this.options.initialReconnectDelay;
-
-      // Send login message
-      const loginMessage: WebSocketMessage = {
-        type: "Login",
-        name: this.options.name,
-        memNo: this.options.memNo,
-        notifyClientCountRole: this.options.notifyClientCountRole,
-        notifyClientAddCloseRole: this.options.notifyClientAddCloseRole,
-      };
-      this.send(loginMessage);
-
-      if (this.options.enableHeartCheck) {
-        this.startHeartbeat();
-      }
-
-      console.log(
-        `WebSocket 連線成功${this.options.enableHeartCheck ? "，開始心跳檢查" : ""}`
-      );
-      this.eventHandlers.onOpen?.();
-    });
-
     this.socket.addEventListener("close", (event) => {
       this.setState(WebSocketState.DISCONNECTED);
       this.stopHeartbeat();
-
       console.log("WebSocket 連線關閉");
       this.eventHandlers.onClose?.(event);
-
       if (event.code !== 1000) {
         this.handleReconnect();
       }
@@ -268,16 +293,13 @@ export class WebSocketClient {
     this.socket.addEventListener("message", (event) => {
       try {
         const message = JSON.parse(event.data) as WebSocketMessage;
-
         if (this.options.enableHeartCheck) {
           this.resetHeartbeat();
         }
-
         if (message.TypeCode === "Pong") {
           this.clearHeartbeatTimeout();
           return;
         }
-
         if (message.type !== "Error") {
           this.options.callBack?.(message);
           this.eventHandlers.onMessage?.(message);
@@ -313,14 +335,17 @@ export class WebSocketClient {
 
     setTimeout(async () => {
       console.log(`WebSocket 重新連線 (第 ${this.reconnectAttempts} 次嘗試)`);
-      await this.connect();
+      try {
+        await this.connect();
+      } catch (error) {
+        console.error("重連失敗:", error);
+      }
 
-      // 指數回退算法
+      // 指數回退嘗試
       this.currentReconnectDelay = Math.min(
         this.currentReconnectDelay * 2,
         this.options.maxReconnectDelay
       );
-
       this.lockReconnect = false;
     }, this.currentReconnectDelay);
   }
