@@ -874,11 +874,12 @@ declare class WebSocketClient {
      */
     private buildWebSocketURL;
     /**
-     * 建立 WebSocket 連線
+     * 處理 WebSocket 連線，必須在使用前調用，且等待連線成功後才能發送訊息。
+     * @returns Promise<void>
      */
     connect(): Promise<void>;
     /**
-     * 設置 WebSocket 事件處理
+     * 設置 WebSocket 持久性事件處理（不包含 open 事件，因為已經在 connect 中處理）
      */
     private setupEventHandlers;
     /**
