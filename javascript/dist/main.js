@@ -710,51 +710,66 @@ var WebSocketClient = class {
     return `${this.options.webSocketURL}/api/WSClient?${params.toString()}`;
   }
   /**
-   * 建立 WebSocket 連線
+   * 處理 WebSocket 連線，必須在使用前調用，且等待連線成功後才能發送訊息。
+   * @returns Promise<void>
    */
   async connect() {
     if (this.currentState === "connecting" /* CONNECTING */ || this.currentState === "connected" /* CONNECTED */) {
       return;
     }
-    try {
-      this.setState("connecting" /* CONNECTING */);
-      if (!("WebSocket" in window)) {
-        throw new Error("\u700F\u89BD\u5668\u4E0D\u652F\u63F4 WebSocket");
+    return new Promise((resolve, reject) => {
+      try {
+        this.setState("connecting" /* CONNECTING */);
+        if (!("WebSocket" in window)) {
+          throw new Error("\u700F\u89BD\u5668\u4E0D\u652F\u63F4 WebSocket");
+        }
+        const url = this.buildWebSocketURL();
+        this.socket = new WebSocket(url);
+        const onOpen = () => {
+          this.setState("connected" /* CONNECTED */);
+          this.reconnectAttempts = 0;
+          this.currentReconnectDelay = this.options.initialReconnectDelay;
+          const loginMessage = {
+            type: "Login",
+            name: this.options.name,
+            memNo: this.options.memNo,
+            notifyClientCountRole: this.options.notifyClientCountRole,
+            notifyClientAddCloseRole: this.options.notifyClientAddCloseRole
+          };
+          this.send(loginMessage);
+          if (this.options.enableHeartCheck) {
+            this.startHeartbeat();
+          }
+          console.log(
+            `WebSocket \u9023\u7DDA\u6210\u529F${this.options.enableHeartCheck ? "\uFF0C\u958B\u59CB\u5FC3\u8DF3\u6AA2\u67E5" : ""}`
+          );
+          this.socket?.removeEventListener("open", onOpen);
+          this.socket?.removeEventListener("error", onError);
+          this.setupEventHandlers();
+          this.eventHandlers.onOpen?.();
+          resolve();
+        };
+        const onError = (event) => {
+          this.setState("error" /* ERROR */);
+          console.error("WebSocket \u5EFA\u7ACB\u9023\u7DDA\u767C\u751F\u932F\u8AA4:", event);
+          this.socket?.removeEventListener("open", onOpen);
+          this.socket?.removeEventListener("error", onError);
+          reject(new Error("WebSocket \u9023\u7DDA\u5931\u6557"));
+        };
+        this.socket.addEventListener("open", onOpen);
+        this.socket.addEventListener("error", onError);
+      } catch (error) {
+        this.setState("error" /* ERROR */);
+        console.error("WebSocket \u5EFA\u7ACB\u9023\u7DDA\u767C\u751F\u932F\u8AA4:", error);
+        reject(error);
       }
-      const url = this.buildWebSocketURL();
-      this.socket = new WebSocket(url);
-      this.setupEventHandlers();
-    } catch (error) {
-      this.setState("error" /* ERROR */);
-      console.error("WebSocket \u5EFA\u7ACB\u9023\u7DDA\u767C\u751F\u932F\u8AA4:", error);
-      await this.handleReconnect();
-    }
+    });
   }
   /**
-   * 設置 WebSocket 事件處理
+   * 設置 WebSocket 持久性事件處理（不包含 open 事件，因為已經在 connect 中處理）
    */
   setupEventHandlers() {
     if (!this.socket) return;
-    this.socket.addEventListener("open", () => {
-      this.setState("connected" /* CONNECTED */);
-      this.reconnectAttempts = 0;
-      this.currentReconnectDelay = this.options.initialReconnectDelay;
-      const loginMessage = {
-        type: "Login",
-        name: this.options.name,
-        memNo: this.options.memNo,
-        notifyClientCountRole: this.options.notifyClientCountRole,
-        notifyClientAddCloseRole: this.options.notifyClientAddCloseRole
-      };
-      this.send(loginMessage);
-      if (this.options.enableHeartCheck) {
-        this.startHeartbeat();
-      }
-      console.log(
-        `WebSocket \u9023\u7DDA\u6210\u529F${this.options.enableHeartCheck ? "\uFF0C\u958B\u59CB\u5FC3\u8DF3\u6AA2\u67E5" : ""}`
-      );
-      this.eventHandlers.onOpen?.();
-    });
     this.socket.addEventListener("close", (event) => {
       this.setState("disconnected" /* DISCONNECTED */);
       this.stopHeartbeat();
@@ -801,7 +816,11 @@ var WebSocketClient = class {
     this.reconnectAttempts++;
     setTimeout(async () => {
       console.log(`WebSocket \u91CD\u65B0\u9023\u7DDA (\u7B2C ${this.reconnectAttempts} \u6B21\u5617\u8A66)`);
-      await this.connect();
+      try {
+        await this.connect();
+      } catch (error) {
+        console.error("\u91CD\u9023\u5931\u6557:", error);
+      }
       this.currentReconnectDelay = Math.min(
         this.currentReconnectDelay * 2,
         this.options.maxReconnectDelay
