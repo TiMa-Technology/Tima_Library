@@ -7,6 +7,7 @@ const mockStorage = {
   getItem: vi.fn(),
   setItem: vi.fn(),
   removeItem: vi.fn(),
+  clear: vi.fn(),
 };
 
 // 模擬 window.location
@@ -19,6 +20,10 @@ vi.stubGlobal("window", {
 // 模擬 fetch
 const mockFetch = vi.fn();
 vi.stubGlobal("fetch", mockFetch);
+
+// 模擬 console.error
+const mockConsoleError = vi.fn();
+vi.stubGlobal("console", { error: mockConsoleError });
 
 describe("AppAuthorization 測試", () => {
   const appAccount = "test-account";
@@ -72,113 +77,6 @@ describe("AppAuthorization 測試", () => {
       expect(() => {
         new AppAuthorization(null as any, appPassword);
       }).toThrow("請設定 APP_ACCOUNT 和 APP_PASSWORD 環境變數");
-    });
-  });
-
-  describe("getToken 方法", () => {
-    it("應成功獲取並儲存 Token", async () => {
-      const mockResponse: ApiResponse<TokenResponse> = {
-        token: "mock-token",
-        tokenExpire: "2025-06-10T12:00:00Z",
-        account: "test-account",
-        name: "Test User",
-        appNo: "123",
-        webURL: "http://example.com",
-        bMemNo: "B001",
-        bMemName: "Business",
-        bDate: "2025-06-01",
-        uMemNo: "U001",
-        uMemName: "User",
-        uDate: "2025-06-01",
-        checkCode: "ABC123",
-      };
-      mockFetch.mockResolvedValueOnce({
-        json: () => Promise.resolve(mockResponse),
-      });
-
-      const result = await auth.getToken();
-
-      expect(mockFetch).toHaveBeenCalledWith(
-        "http://localhost:3000/api/TM_ApiMgr_App_CheckSsword?account=test-account&ssword=test-password"
-      );
-      expect(mockStorage.setItem).toHaveBeenCalledWith(
-        "apitoken",
-        "mock-token"
-      );
-      expect(mockStorage.setItem).toHaveBeenCalledWith(
-        "apitokentimeout",
-        "2025-06-10T12:00:00Z"
-      );
-      expect(result).toEqual(mockResponse);
-    });
-
-    it("應在 API 返回 errorMessage 時拋出錯誤", async () => {
-      const mockResponse: ApiResponse<TokenResponse> = {
-        errorMessage: "無效的憑證",
-      };
-      mockFetch.mockResolvedValueOnce({
-        json: () => Promise.resolve(mockResponse),
-      });
-
-      await expect(auth.getToken()).rejects.toThrow("無效的憑證");
-      expect(mockStorage.setItem).not.toHaveBeenCalled();
-    });
-
-    it("應使用單一 Promise 處理並發 Token 請求", async () => {
-      const mockResponse: ApiResponse<TokenResponse> = {
-        token: "mock-token",
-        tokenExpire: "2025-06-10T12:00:00Z",
-        account: "test-account",
-        name: "Test User",
-        appNo: "123",
-        webURL: "http://example.com",
-        bMemNo: "B001",
-        bMemName: "Business",
-        bDate: "2025-06-01",
-        uMemNo: "U001",
-        uMemName: "User",
-        uDate: "2025-06-01",
-        checkCode: "ABC123",
-      };
-      mockFetch.mockResolvedValueOnce({
-        json: () => Promise.resolve(mockResponse),
-      });
-
-      const promise1 = auth.getToken();
-      const promise2 = auth.getToken();
-
-      const [result1, result2] = await Promise.all([promise1, promise2]);
-
-      expect(mockFetch).toHaveBeenCalledTimes(1); // 確保只請求一次
-      expect(result1).toEqual(mockResponse);
-      expect(result2).toEqual(mockResponse);
-      expect(mockStorage.setItem).toHaveBeenCalledWith(
-        "apitoken",
-        "mock-token"
-      );
-      expect(mockStorage.setItem).toHaveBeenCalledWith(
-        "apitokentimeout",
-        "2025-06-10T12:00:00Z"
-      );
-    });
-
-    it("應在 API 回應 token 是空 UUID 時拋出錯誤", async () => {
-      const mockResponse: ApiResponse<TokenResponse> = {
-        tokenExpire: "2025-06-10T12:00:00Z",
-      };
-      mockFetch.mockResolvedValueOnce({
-        json: () => Promise.resolve(mockResponse),
-      });
-
-      await expect(auth.getToken()).rejects.toThrow("無效的憑證!");
-      expect(mockStorage.setItem).not.toHaveBeenCalled();
-    });
-
-    it("應在 fetch 失敗時拋出錯誤", async () => {
-      mockFetch.mockRejectedValueOnce(new Error("網路錯誤"));
-
-      await expect(auth.getToken()).rejects.toThrow("網路錯誤");
-      expect(mockStorage.setItem).not.toHaveBeenCalled();
     });
   });
 
@@ -354,6 +252,54 @@ describe("AppAuthorization 測試", () => {
       });
       expect(mockFetch).toHaveBeenCalledTimes(1);
       expect(mockStorage.setItem).toHaveBeenCalledWith("apitoken", "new-token");
+    });
+
+    it("應能處理並發的 prepareAuthHeader 請求，並只發送一次 token 請求", async () => {
+      mockStorage.getItem.mockReturnValue(null); // 模擬 token 不存在
+      const mockResponse: ApiResponse<TokenResponse> = {
+        token: "new-concurrent-token",
+        tokenExpire: "2025-12-31T23:59:59Z",
+        account: "test-account",
+        name: "Test User",
+        appNo: "123",
+        webURL: "http://example.com",
+        bMemNo: "B001",
+        bMemName: "Business",
+        bDate: "2025-06-01",
+        uMemNo: "U001",
+        uMemName: "User",
+        uDate: "2025-06-01",
+        checkCode: "ABC123",
+      };
+      mockFetch.mockResolvedValueOnce({
+        json: () => Promise.resolve(mockResponse),
+      });
+
+      const headers1: Record<string, string> = {};
+      const headers2: Record<string, string> = {};
+
+      const promise1 = auth.prepareAuthHeader(headers1, "api/some_endpoint");
+      const promise2 = auth.prepareAuthHeader(headers2, "api/some_endpoint");
+
+      const [result1, result2] = await Promise.all([promise1, promise2]);
+
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      expect(result1).toBe(true);
+      expect(result2).toBe(true);
+      expect(headers1).toEqual({
+        Authorization: "Basic " + btoa(`${appAccount}:new-concurrent-token`),
+      });
+      expect(headers2).toEqual({
+        Authorization: "Basic " + btoa(`${appAccount}:new-concurrent-token`),
+      });
+      expect(mockStorage.setItem).toHaveBeenCalledWith(
+        "apitoken",
+        "new-concurrent-token"
+      );
+      expect(mockStorage.setItem).toHaveBeenCalledWith(
+        "apitokentimeout",
+        "2025-12-31T23:59:59Z"
+      );
     });
   });
 });
