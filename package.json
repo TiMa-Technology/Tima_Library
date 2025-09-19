@@ -1,0 +1,5 @@
+{
+  "devDependencies": {
+    "@google/gemini-cli": "^0.1.22"
+  }
+}
