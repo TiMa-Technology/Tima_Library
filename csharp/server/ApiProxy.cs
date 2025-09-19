@@ -132,7 +132,8 @@ namespace TM.v2.TimaUtils
             // 12. 返回最終的 HttpResponseMessage
             // 13. 處理異常情況，返回錯誤響應
             #endregion
-
+            // TODO: 定義預設需要被編碼的標頭
+            HashSet<string> HeadersToEncode = new HashSet<string>(StringComparer.OrdinalIgnoreCase); 
 
             // 使用傳入的標頭清單或預設清單
             var headersToProcess = headersToEncode?.ToHashSet(StringComparer.OrdinalIgnoreCase) ?? HeadersToEncode;
@@ -376,6 +377,48 @@ namespace TM.v2.TimaUtils
                 // 如果寫檔失敗，存到資料庫
                 _errorMessage = "log 寫檔案失敗: " + ex.Message;
             }
+        }
+
+        /// <summary>
+        /// 將 Header 值編碼為 URL 安全格式，支援非 ASCII 字符（如中文）。
+        /// </summary>
+        /// <param name="values">要編碼的 Header 值集合。</param>
+        /// <returns>編碼後的 Header 值集合。</returns>
+        private static IEnumerable<string> EncodeHeaderValues(IEnumerable<string> values)
+        {
+            if (values == null)
+                return new List<string>();
+
+            var encodedValues = new List<string>();
+            foreach (var value in values)
+            {
+                if (string.IsNullOrEmpty(value))
+                    encodedValues.Add(value);
+                else
+                    encodedValues.Add(HttpUtility.UrlEncode(value));
+            }
+            return encodedValues;
+        }
+
+        /// <summary>
+        /// 將編碼的 Header 值解碼，還原為原始格式（如中文）。
+        /// </summary>
+        /// <param name="values">要解碼的 Header 值集合。</param>
+        /// <returns>解碼後的 Header 值集合。</returns>
+        private static IEnumerable<string> DecodeHeaderValues(IEnumerable<string> values)
+        {
+            if (values == null)
+                return new List<string>();
+
+            var decodedValues = new List<string>();
+            foreach (var value in values)
+            {
+                if (string.IsNullOrEmpty(value))
+                    decodedValues.Add(value);
+                else
+                    decodedValues.Add(HttpUtility.UrlDecode(value));
+            }
+            return decodedValues;
         }
     }
 }
