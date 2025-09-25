@@ -261,46 +261,7 @@ namespace TM.v2.TimaUtils
                     WriteLog($"跳轉的API伺服器回應: {response.StatusCode}");
                 }
 
-                // 創建回應訊息
-                var responseMessage = new HttpResponseMessage(response.StatusCode);
-
-                // 複製response headers，必要時解碼
-                foreach (var header in response.Headers)
-                {
-                    if (headersToProcess.Contains(header.Key))
-                    {
-                        var decodedValues = DecodeHeaderValues(header.Value);
-                        responseMessage.Headers.TryAddWithoutValidation(header.Key, decodedValues);
-                    }
-                    else
-                    {
-                        responseMessage.Headers.TryAddWithoutValidation(header.Key, header.Value);
-                    }
-                }
-
-                // 複製回應內容
-                if (response.Content != null)
-                {
-                    var originalContent = await response.Content.ReadAsByteArrayAsync();
-                    var content = new ByteArrayContent(originalContent);
-
-                    foreach (var header in response.Content.Headers)
-                    {
-                        if (headersToProcess.Contains(header.Key))
-                        {
-                            var decodedValues = DecodeHeaderValues(header.Value);
-                            content.Headers.TryAddWithoutValidation(header.Key, decodedValues);
-                        }
-                        else
-                        {
-                            content.Headers.TryAddWithoutValidation(header.Key, header.Value);
-                        }
-                    }
-
-                    responseMessage.Content = content;
-                }
-
-                return responseMessage;
+                return response;
             }
             catch (ObjectDisposedException ex)
             {
