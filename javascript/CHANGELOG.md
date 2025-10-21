@@ -1,5 +1,11 @@
 # @tima_technology/lib
 
+## 1.3.4
+
+### Patch Changes
+
+- feat: Switch from tsup to tsdown for compilation
+
 ## 1.3.3
 
 ### Patch Changes
