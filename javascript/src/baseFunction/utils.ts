@@ -1,4 +1,3 @@
-import { clearTimeout } from "node:timers";
 import type { ApiError } from "types/api";
 import type {
   DebounceFunction,
