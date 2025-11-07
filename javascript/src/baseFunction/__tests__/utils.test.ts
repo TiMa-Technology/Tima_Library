@@ -450,7 +450,7 @@ describe("debounce", () => {
     expect(mockFn).not.toHaveBeenCalledWith("first");
     expect(mockFn).not.toHaveBeenCalledWith("second");
     expect(mockFn).toHaveBeenCalledWith("third");
-    expect(mockFn).toHaveBeenCalledTimes(3); // 會被呼叫三次但其他時間內的都會被直接清除
+    expect(mockFn).toHaveBeenCalledTimes(1);
   });
 
   it("應該支援立即執行模式", () => {
