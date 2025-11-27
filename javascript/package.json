@@ -1,6 +1,6 @@
 {
   "name": "@tima_technology/lib",
-  "version": "1.3.7",
+  "version": "1.4.0",
   "description": "Javascript utils for tima only.",
   "main": "dist/main.js",
   "module": "./dist/main.mjs",
@@ -38,12 +38,30 @@
     "format",
     "browser"
   ],
-  "author": "Tima Tech",
+  "author": "TiMa-Technology",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/TiMa-Technology/Tima_Library/issues"
   },
   "homepage": "https://github.com/TiMa-Technology/Tima_Library#readme",
+  "exports": {
+    ".": {
+      "import": "./dist/main.js",
+      "types": "./dist/main.d.ts"
+    },
+    "./auth": {
+      "import": "./dist/auth/index.js",
+      "types": "./dist/auth/index.d.ts"
+    },
+    "./browserUtils": {
+      "import": "./dist/browserUtils/index.js",
+      "types": "./dist/browserUtils/index.d.ts"
+    },
+    "./baseFunction": {
+      "import": "./dist/baseFunction/index.js",
+      "types": "./dist/baseFunction/index.d.ts"
+    }
+  },
   "devDependencies": {
     "@changesets/cli": "^2.29.5",
     "@eslint/compat": "^1.2.9",
