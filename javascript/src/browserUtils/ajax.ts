@@ -5,7 +5,7 @@ import type {
   AvailableHttpMethod,
   ExecuteQueryProps,
   QueryOptions,
-} from "../../types/api";
+} from "../types/api";
 import { AppAuthorization } from "../auth/auth";
 import { simpleHash } from "../baseFunction/utils";
 
