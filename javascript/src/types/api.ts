@@ -1,4 +1,4 @@
-import type { QueryState } from "../src/browserUtils";
+import type { QueryState } from "../browserUtils";
 
 export type ApiResponse<T = unknown> = {
   errorMessage?: string;

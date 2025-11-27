@@ -1,5 +1,13 @@
 # @tima_technology/lib
 
+## 1.4.1
+
+### Patch Changes
+
+- refactor: 修正主入口型別匯出，確保所有型別都能從主入口 import
+- feat: 優化 package.json exports 配置
+- refactor: 調整 tsup 打包設定，保證 `dist/main.d.ts` 包含所有型別
+
 ## 1.3.4
 
 ### Patch Changes
