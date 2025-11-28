@@ -3,10 +3,10 @@ name: CI & Build
 on:
   push:
     branches: [main, dev]
-    paths: [ 'javascript/**' ]  # 只有 javascript 目錄變動才觸發
+    paths: ["javascript/**"] # 只有 javascript 目錄變動才觸發
   pull_request:
     branches: [main, dev]
-    paths: [ 'javascript/**' ]  # 只有 javascript 目錄變動才觸發
+    paths: ["javascript/**"] # 只有 javascript 目錄變動才觸發
   workflow_dispatch:
 
 jobs:
@@ -22,13 +22,13 @@ jobs:
       - name: 📥 取得原始碼
         uses: actions/checkout@v4
 
-      - name: 🟢 設定 Node.js (版本 22.14.0 以上）
+      - name: 🟢 設定 Node.js (版本 24.11.0 以上）
         uses: actions/setup-node@v4
         with:
-          node-version: '>=22.14.0'
-          cache: 'npm'
-          cache-dependency-path: './javascript/package-lock.json' 
-          registry-url: 'https://registry.npmjs.org'
+          node-version: ">=24.11.0"
+          cache: "npm"
+          cache-dependency-path: "./javascript/package-lock.json"
+          registry-url: "https://registry.npmjs.org"
 
       - name: 📦 安裝套件
         run: npm ci
@@ -37,7 +37,7 @@ jobs:
         run: npm run lint
 
       - name: 📝 檢查程式碼格式 (Prettier)
-        run: npm run check-format  
+        run: npm run check-format
 
       - name: ✅ 執行測試（含 coverage)
         run: npm run test:coverage
@@ -51,13 +51,13 @@ jobs:
         with:
           name: coverage-report
           path: ./javascript/coverage/
-      
+
       - name: 📦 檢查版本是否已存在
         id: check_version
         run: |
           CURRENT_VERSION=$(node -p "require('./package.json').version")
           echo "Current version: $CURRENT_VERSION"
-          
+
           # 使用更可靠的版本檢查方式
           if npm show @tima_technology/lib@$CURRENT_VERSION version 2>/dev/null; then
             echo "❌ Version $CURRENT_VERSION already exists on NPM"
@@ -68,7 +68,7 @@ jobs:
             echo "should_publish=true" >> $GITHUB_OUTPUT
             echo "version_exists=false" >> $GITHUB_OUTPUT
           fi
-        
+
           echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
 
       - name: 📦 發布到 NPM
