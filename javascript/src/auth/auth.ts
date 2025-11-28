@@ -1,4 +1,5 @@
-import type { ApiResponse, TokenResponse } from "types/api";
+import type { ApiResponse, TokenResponse } from "../types/api";
+import { getBaseUrl } from "@/browserUtils";
 import { emptyGuid } from "../baseFunction";
 
 export class AppAuthorization {
@@ -8,17 +9,17 @@ export class AppAuthorization {
   private refreshSubscribers: ((token: string | null) => void)[] = [];
 
   constructor(appAccount: string = "", appPassword: string = "") {
-    this.appAccount = appAccount;
-    this.appPassword = appPassword;
     if (!appAccount || !appPassword) {
       throw new Error("請設定 APP_ACCOUNT 和 APP_PASSWORD 環境變數");
     }
+    this.appAccount = appAccount;
+    this.appPassword = appPassword;
   }
 
   private async fetchToken(): Promise<string | null> {
     try {
       const response = await fetch(
-        `${window.location.origin}/api/TM_ApiMgr_App_CheckSsword?account=${this.appAccount}&ssword=${this.appPassword}`
+        `${getBaseUrl}/api/TM_ApiMgr_App_CheckSsword?account=${encodeURIComponent(this.appAccount)}&ssword=${encodeURIComponent(this.appPassword)}`
       );
       const data: ApiResponse<TokenResponse> = await response.json();
 
