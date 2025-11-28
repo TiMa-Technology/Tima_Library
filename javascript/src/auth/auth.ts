@@ -1,5 +1,5 @@
 import type { ApiResponse, TokenResponse } from "../types/api";
-import { getBaseUrl } from "@/browserUtils";
+import { getBaseUrl } from "../browserUtils";
 import { emptyGuid } from "../baseFunction";
 
 export class AppAuthorization {
