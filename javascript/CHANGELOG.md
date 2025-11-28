@@ -1,5 +1,11 @@
 # @tima_technology/lib
 
+## 1.4.3
+
+### Patch Changes
+
+- fix: 修正請求參數為可選
+
 ## 1.4.2
 
 ### Patch Changes
