@@ -71,14 +71,14 @@ export class ApiStateManager {
     }
   }
 
-  async executeRequest(
+  async executeRequest<TResponse>(
     baseUrl: string,
     endpoint: string,
     requestBody: string | Record<string, any> | FormData,
     method: AvailableHttpMethod,
     options: Partial<ApiConfig> = {},
     fetchOptions: Partial<RequestInit> = {}
-  ): Promise<ApiResponse> {
+  ): Promise<ApiResponse<TResponse>> {
     const buildUrlWithParams = (url: string, params: Record<string, any>) => {
       const usp = new URLSearchParams(params).toString();
       return usp ? `${url}?${usp}` : url;
@@ -116,7 +116,7 @@ export class ApiStateManager {
     };
 
     const response = await fetch(requestUrl, finalFetchOptions);
-    const data: ApiResponse = await response.json();
+    const data: ApiResponse<TResponse> = await response.json();
 
     if (!response.ok) {
       const apiError = new Error(
@@ -247,11 +247,141 @@ export class QueryState {
   }
 }
 
+/**
+ * 創建 API 狀態管理器實例
+ * @param appAccount 授權帳號
+ * @param appPassword 授權密碼
+ *
+ * @example
+ * // 創建並應專案需求化成請求函式
+ * const manager = createApiStateManager(process.env.APP_ACCOUNT!, process.env.APP_ACCOUNT!);
+ * export const apiRequest = (body: QueryOptions) => ajaxApi(manager, body);
+ */
 export function createApiStateManager(appAccount: string, appPassword: string) {
   return new ApiStateManager(appAccount, appPassword);
 }
 
-export async function ajaxApi(
+/**
+ * 時光機客製化請求，會先檢查授權並發送
+ * @template TResponse - API 回應型別
+ *
+ * @param {ApiStateManager} apiStateManager - API 狀態管理器，經過授權資料初始化
+ * @param {QueryOptions} options - 請求選項
+ * @param {string} [options.baseUrl="../api"] - API 基礎 URL
+ * @param {string} options.endpoint - API 端點路徑
+ * @param {string | Record<string, any> | FormData} [options.requestBody] - 請求主體
+ * @param {string} [options.method="GET"] - HTTP 方法
+ * @param {object} [options.config={}] - 額外配置選項
+ * @param {Partial<RequestInit>} [options.fetchOptions={}] - Fetch API 選項
+ *
+ * @returns {Promise<ApiResponse<TResponse>>} 返回包含指定型別的 API 回應
+ *
+ * @example
+ * // 單筆資料範例 - 資料會散佈在最外層
+ * interface User {
+ *   id: number;
+ *   name: string;
+ *   email: string;
+ * }
+ *
+ * const response = await customRequest<User>(apiStateManager, {
+ *   endpoint: "users/123",
+ *   method: "GET"
+ * });
+ *
+ * // 回應格式：
+ * // {
+ * //   id: 1,
+ * //   name: "John Doe",
+ * //   email: "john@example.com",
+ * //   errorMessage?: string
+ * // }
+ * console.log(response.id); // number
+ * console.log(response.name); // string
+ * console.log(response.errorMessage); // string | undefined
+ *
+ * @example
+ * // 多筆資料範例 - 資料會包在 itemList 中
+ * interface Product {
+ *   id: number;
+ *   name: string;
+ *   price: number;
+ * }
+ *
+ * const response = await customRequest<Product[]>(apiStateManager, {
+ *   endpoint: "products",
+ *   method: "GET"
+ * });
+ *
+ * // 回應格式：
+ * // {
+ * //   itemList: [
+ * //     { id: 1, name: "Product A", price: 100 },
+ * //     { id: 2, name: "Product B", price: 200 }
+ * //   ],
+ * //   totalCount: 50,  // 可能有其他附加欄位
+ * //   errorMessage?: string
+ * // }
+ * console.log(response.itemList); // Partial<Product[]>
+ * console.log(response.totalCount); // unknown (需要自行斷言或擴展型別)
+ *
+ * @example
+ * // POST 請求範例
+ * interface CreateOrderResponse {
+ *   orderId: string;
+ *   status: "pending" | "confirmed";
+ *   createdAt: string;
+ * }
+ *
+ * const response = await customRequest<CreateOrderResponse>(apiStateManager, {
+ *   endpoint: "orders",
+ *   method: "POST",
+ *   requestBody: {
+ *     productId: 123,
+ *     quantity: 2
+ *   }
+ * });
+ *
+ * // 回應格式：
+ * // {
+ * //   orderId: "ORD-12345",
+ * //   status: "pending",
+ * //   createdAt: "2025-01-01T00:00:00Z",
+ * //   errorMessage?: string
+ * // }
+ * console.log(response.orderId); // string
+ * console.log(response.status); // "pending" | "confirmed"
+ *
+ * @example
+ * // 處理錯誤回應
+ * try {
+ *   const response = await customRequest<User>(apiStateManager, {
+ *     endpoint: "users/999",
+ *     method: "GET"
+ *   });
+ *
+ *   if (response.errorMessage) {
+ *     console.error("API 回應錯誤：", response.errorMessage);
+ *   }
+ * } catch (error) {
+ *   const apiError = error as ApiError;
+ *   if (apiError.isApiError) {
+ *     console.error("API 請求失敗：", apiError.message);
+ *     console.error("狀態碼：", apiError.status);
+ *     console.error("回應內容：", apiError.response);
+ *   }
+ * }
+ *
+ * @example
+ * // 不指定型別（使用預設 unknown）
+ * const response = await customRequest(apiStateManager, {
+ *   endpoint: "status",
+ *   method: "GET"
+ * });
+ * // response 型別為 ApiResponse<unknown>
+ * // 需要手動進行型別斷言或檢查
+ */
+export async function customRequest<TResponse = any>(
   apiStateManager: ApiStateManager,
   {
     baseUrl = "../api",
@@ -261,7 +391,7 @@ export async function ajaxApi(
     config = {},
     fetchOptions = {},
   }: QueryOptions
-): Promise<ApiResponse> {
+): Promise<ApiResponse<TResponse>> {
   const finalConfig = { ...apiStateManager.getDefaultConfig(), ...config };
   let attempt = 0;
   const maxAttempts = finalConfig.retry + 1;
@@ -270,7 +400,7 @@ export async function ajaxApi(
     try {
       if (!endpoint) throw new Error("無提供 API 端點");
 
-      return await apiStateManager.executeRequest(
+      return await apiStateManager.executeRequest<TResponse>(
         baseUrl,
         endpoint,
         requestBody,

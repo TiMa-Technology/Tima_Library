@@ -1,5 +1,5 @@
 import { handleApiError } from "../baseFunction";
-import { ajaxApi, type ApiStateManager } from "./ajax";
+import { customRequest, type ApiStateManager } from "./fetcher";
 
 interface LogOptions {
   bMemNo: string | null;
@@ -55,7 +55,7 @@ export class InfoLogger {
     url = window.location.href,
   }: LogOptions): Promise<void> {
     try {
-      await ajaxApi(this.apiStateManager, {
+      await customRequest(this.apiStateManager, {
         method: "GET",
         endpoint: "My_Log_Info",
         requestBody: {

@@ -9,7 +9,7 @@ import {
 } from "vitest";
 import { InfoLogger } from "../infoLogger";
 import { handleApiError } from "../../baseFunction";
-import { ajaxApi, type ApiStateManager } from "../ajax";
+import { customRequest, type ApiStateManager } from "../fetcher";
 
 vi.mock("../../baseFunction");
 vi.mock("../ajax");
@@ -32,7 +32,7 @@ vi.stubGlobal("navigator", mockNavigator);
 describe("InfoLogger", () => {
   let mockApiStateManager: ApiStateManager;
   let infoLogger: InfoLogger;
-  let mockAjaxApi: MockedFunction<typeof ajaxApi>;
+  let mockAjaxApi: MockedFunction<typeof customRequest>;
   let mockHandleApiError: MockedFunction<typeof handleApiError>;
 
   beforeEach(() => {
@@ -43,7 +43,7 @@ describe("InfoLogger", () => {
     mockApiStateManager = {} as ApiStateManager;
 
     // 設定 mock 函數
-    mockAjaxApi = vi.mocked(ajaxApi);
+    mockAjaxApi = vi.mocked(customRequest);
     mockHandleApiError = vi.mocked(handleApiError);
 
     // 建立 InfoLogger 實例

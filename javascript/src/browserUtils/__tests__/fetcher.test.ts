@@ -1,17 +1,17 @@
 import { simpleHash } from "../../baseFunction";
-import type { ApiResponse, ApiError, ApiConfig } from "types/api";
+import type { ApiResponse, ApiError, ApiConfig } from "../../types/api";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
   ApiStateManager,
   QueryState,
-  ajaxApi,
+  customRequest,
   useAjaxApi,
   refetchQuery,
   invalidateQuery,
   clearAllCache,
   setDefaultConfig,
   cleanCacheInterval,
-} from "../ajax";
+} from "../fetcher";
 
 // 模擬 fetch
 const mockFetch = vi.fn();
@@ -460,12 +460,12 @@ describe("ApiStateManager 測試", () => {
     });
   });
 
-  describe("ajaxApi 函數", () => {
+  describe("customRequest 函數", () => {
     it("應成功執行請求", async () => {
       const mockResponse: ApiResponse = { data: "test" };
       vi.spyOn(manager, "executeRequest").mockResolvedValue(mockResponse);
 
-      const result = await ajaxApi(manager, {
+      const result = await customRequest(manager, {
         baseUrl: "../api",
         endpoint: "test_endpoint",
         requestBody: { param: "value" },
@@ -485,7 +485,11 @@ describe("ApiStateManager 測試", () => {
 
     it("應在缺少端點時拋出錯誤", async () => {
       await expect(
-        ajaxApi(manager, { baseUrl: "../api", endpoint: "", requestBody: {} })
+        customRequest(manager, {
+          baseUrl: "../api",
+          endpoint: "",
+          requestBody: {},
+        })
       ).rejects.toThrow("無提供 API 端點");
     });
 
@@ -495,7 +499,7 @@ describe("ApiStateManager 測試", () => {
         .mockRejectedValueOnce(new Error("暫時性錯誤"))
         .mockResolvedValueOnce(mockResponse);
 
-      const result = await ajaxApi(manager, {
+      const result = await customRequest(manager, {
         baseUrl: "../api",
         endpoint: "test_endpoint",
         method: "GET",
@@ -514,7 +518,7 @@ describe("ApiStateManager 測試", () => {
       vi.spyOn(manager, "executeRequest").mockRejectedValue(error);
 
       await expect(
-        ajaxApi(manager, {
+        customRequest(manager, {
           baseUrl: "../api",
           endpoint: "test_endpoint",
           requestBody: {},
@@ -529,7 +533,7 @@ describe("ApiStateManager 測試", () => {
       const mockResponse: ApiResponse = { data: "test" };
       vi.spyOn(manager, "executeRequest").mockResolvedValue(mockResponse);
 
-      const result = await ajaxApi(manager, {
+      const result = await customRequest(manager, {
         baseUrl: "../api",
         endpoint: "test_endpoint",
         requestBody: { param: "value" },
