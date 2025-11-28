@@ -1,5 +1,12 @@
 # @tima_technology/lib
 
+## 1.4.5
+
+### Patch Changes
+
+- fix: 修正授權請求的編碼問題
+- fix: 修正引入路徑錯誤
+
 ## 1.4.4
 
 ### Patch Changes
