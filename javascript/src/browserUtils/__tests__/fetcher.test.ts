@@ -33,6 +33,16 @@ vi.mock("../auth/auth", () => ({
   })),
 }));
 
+// 模擬 window.location
+vi.stubGlobal("window", {
+  location: {
+    origin: "http://localhost:3000",
+    protocol: "http:",
+    host: "localhost:3000",
+    pathname: "/",
+  },
+});
+
 // 模擬 simpleHash
 vi.mock("../../baseFunction/utils", () => ({
   simpleHash: vi.fn((input: string) => `hash-${input}`),

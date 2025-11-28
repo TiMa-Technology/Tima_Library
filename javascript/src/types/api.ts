@@ -22,7 +22,7 @@ export interface ListApiResponse<T> extends BaseApiResponse {
  * 泛用 API 回應型別
  * @template T - 回應資料型別（前端自行定義完整結構）
  */
-export type ApiResponse<T = unknown> = T & BaseApiResponse;
+export type ApiResponse<T = any> = T & BaseApiResponse;
 
 export interface ApiError extends Error {
   isApiError?: boolean;

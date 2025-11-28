@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { AppAuthorization } from "../auth";
-import type { ApiResponse, TokenResponse } from "types/api";
+import type { ApiResponse, TokenResponse } from "../../types/api";
 
 // 模擬 sessionStorage
 const mockStorage = {
@@ -14,6 +14,9 @@ const mockStorage = {
 vi.stubGlobal("window", {
   location: {
     origin: "http://localhost:3000",
+    protocol: "http:",
+    host: "localhost:3000",
+    pathname: "/",
   },
 });
 
