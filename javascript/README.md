@@ -125,7 +125,7 @@ console.log(adjustDateTime("2025-06-22", { days: 5 })); // "2025/06/27"
 </details>
 
 <details>
-<summary>AJAX 請求（ajax）</summary>
+<summary>請求（原生 `fetch`)</summary>
 
 - createApiStateManager
 - customRequest

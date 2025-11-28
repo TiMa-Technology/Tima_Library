@@ -12,7 +12,7 @@ import { handleApiError } from "../../baseFunction";
 import { customRequest, type ApiStateManager } from "../fetcher";
 
 vi.mock("../../baseFunction");
-vi.mock("../ajax");
+vi.mock("../fetcher");
 
 // Mock navigator
 const mockNavigator = {
