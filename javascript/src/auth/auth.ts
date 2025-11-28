@@ -5,6 +5,7 @@ import { emptyGuid } from "../baseFunction";
 export class AppAuthorization {
   private appAccount: string;
   private appPassword: string;
+  private baseUrl: string;
   private isRefreshing = false;
   private refreshSubscribers: ((token: string | null) => void)[] = [];
 
@@ -14,12 +15,13 @@ export class AppAuthorization {
     }
     this.appAccount = appAccount;
     this.appPassword = appPassword;
+    this.baseUrl = getBaseUrl();
   }
 
   private async fetchToken(): Promise<string | null> {
     try {
       const response = await fetch(
-        `${getBaseUrl}/api/TM_ApiMgr_App_CheckSsword?account=${encodeURIComponent(this.appAccount)}&ssword=${encodeURIComponent(this.appPassword)}`
+        `${this.baseUrl}/api/TM_ApiMgr_App_CheckSsword?account=${encodeURIComponent(this.appAccount)}&ssword=${encodeURIComponent(this.appPassword)}`
       );
       const data: ApiResponse<TokenResponse> = await response.json();
 
