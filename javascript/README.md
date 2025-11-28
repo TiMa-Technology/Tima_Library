@@ -128,7 +128,7 @@ console.log(adjustDateTime("2025-06-22", { days: 5 })); // "2025/06/27"
 <summary>AJAX 請求（ajax）</summary>
 
 - createApiStateManager
-- ajaxApi
+- customRequest
 - useAjaxApi
 - refetchQuery
 - invalidateQuery
@@ -263,7 +263,6 @@ console.log(
    ```
 
 3. **程式碼規範**：
-
    - 遵循 [Airbnb JavaScript 風格指南](https://github.com/airbnb/javascript)。
    - 執行 `npm run lint` 檢查程式碼。
    - 每個公開函數需包含 JSDoc 註釋，例如：
@@ -282,12 +281,10 @@ console.log(
      ```
 
 4. **測試**（可選）：
-
    - 使用 Vitest 撰寫單元測試，存放於 `tests/`。
    - 執行測試：`npm test`。
 
 5. **提交變更**：
-
    - 使用規範的提交訊息，例如：
      ```bash
      git commit -m "feat: add formatROCDate function"

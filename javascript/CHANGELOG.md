@@ -1,5 +1,12 @@
 # @tima_technology/lib
 
+## 1.4.2
+
+### Patch Changes
+
+- fix: 修改`fetcher`讓主體請求能夠有回應型別能傳入，並更名成適當名稱
+- refactor: 補上 JSDOC 說明
+
 ## 1.4.1
 
 ### Patch Changes
