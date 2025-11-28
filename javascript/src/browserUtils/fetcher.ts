@@ -277,53 +277,56 @@ export function createApiStateManager(appAccount: string, appPassword: string) {
  * @returns {Promise<ApiResponse<TResponse>>} 返回包含指定型別的 API 回應
  *
  * @example
- * // 單筆資料範例 - 資料會散佈在最外層
- * interface User {
- *   id: number;
- *   name: string;
- *   email: string;
+ * // 單筆資料 - 前端自行定義完整結構
+ * interface LoginResponse {
+ *   userId: number;
+ *   userName: string;
+ *   token: string;
+ *   expiresAt: string;
  * }
  *
- * const response = await customRequest<User>(apiStateManager, {
- *   endpoint: "users/123",
- *   method: "GET"
+ * const response = await customRequest<LoginResponse>(apiStateManager, {
+ *   endpoint: "auth/login",
+ *   method: "POST",
+ *   requestBody: { username, password }
  * });
  *
- * // 回應格式：
- * // {
- * //   id: 1,
- * //   name: "John Doe",
- * //   email: "john@example.com",
- * //   errorMessage?: string
- * // }
- * console.log(response.id); // number
- * console.log(response.name); // string
- * console.log(response.errorMessage); // string | undefined
+ * console.log(response.userId);    // ✅ number
+ * console.log(response.token);     // ✅ string
+ * console.log(response.errorMessage); // ✅ string | undefined
  *
  * @example
- * // 多筆資料範例 - 資料會包在 itemList 中
+ * // 多筆資料 - 使用 ListApiResponse 輔助型別
  * interface Product {
  *   id: number;
  *   name: string;
  *   price: number;
  * }
  *
- * const response = await customRequest<Product[]>(apiStateManager, {
+ * const response = await customRequest<ListApiResponse<Product>>(apiStateManager, {
  *   endpoint: "products",
  *   method: "GET"
  * });
  *
- * // 回應格式：
- * // {
- * //   itemList: [
- * //     { id: 1, name: "Product A", price: 100 },
- * //     { id: 2, name: "Product B", price: 200 }
- * //   ],
- * //   totalCount: 50,  // 可能有其他附加欄位
- * //   errorMessage?: string
- * // }
- * console.log(response.itemList); // Partial<Product[]>
- * console.log(response.totalCount); // unknown (需要自行斷言或擴展型別)
+ * console.log(response.itemList);     // ✅ Product[]
+ * console.log(response.totalCount);   // ✅ number | undefined
+ * console.log(response.itemList[0].name); // ✅ string
+ *
+ * @example
+ * // 自訂列表回應結構
+ * interface CustomProductListResponse {
+ *   products: Product[];  // 不叫 itemList
+ *   total: number;
+ *   filters: string[];
+ *   errorMessage?: string;
+ * }
+ *
+ * const response = await customRequest<CustomProductListResponse>(apiStateManager, {
+ *   endpoint: "products/search",
+ * });
+ *
+ * console.log(response.products);  // ✅ Product[]
+ * console.log(response.filters);   // ✅ string[]
  *
  * @example
  * // POST 請求範例

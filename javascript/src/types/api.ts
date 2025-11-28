@@ -1,10 +1,28 @@
 import type { QueryState } from "../browserUtils";
 
-export type ApiResponse<T = unknown> = {
+/**
+ * 基礎 API 回應型別
+ */
+export interface BaseApiResponse {
   errorMessage?: string;
-} & (T extends any[]
-  ? { itemList: Partial<T> } & Record<string, unknown> // 多筆資料，附帶其他欄位
-  : Partial<T> & Record<string, unknown>); // 單筆資料會散在最外層
+}
+
+/**
+ * 列表型 API 回應
+ * @template T - 列表項目型別
+ */
+export interface ListApiResponse<T> extends BaseApiResponse {
+  itemList: T[];
+  totalCount?: number;
+  pageSize?: number;
+  currentPage?: number;
+}
+
+/**
+ * 泛用 API 回應型別
+ * @template T - 回應資料型別（前端自行定義完整結構）
+ */
+export type ApiResponse<T = unknown> = T & BaseApiResponse;
 
 export interface ApiError extends Error {
   isApiError?: boolean;

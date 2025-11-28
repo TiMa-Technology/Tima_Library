@@ -1,5 +1,11 @@
 # @tima_technology/lib
 
+## 1.4.4
+
+### Patch Changes
+
+- fix: 修正API回應型別，將彈性機回前端不寫死
+
 ## 1.4.3
 
 ### Patch Changes
