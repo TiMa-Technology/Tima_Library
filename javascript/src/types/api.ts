@@ -33,7 +33,7 @@ export type AvailableHttpMethod =
 export interface QueryOptions {
   baseUrl?: string;
   endpoint: string;
-  requestBody: string | Record<string, any> | FormData;
+  requestBody?: string | Record<string, any> | FormData;
   method?: AvailableHttpMethod;
   config?: Partial<ApiConfig>;
   fetchOptions?: Partial<RequestInit>;
@@ -52,7 +52,7 @@ export interface ExecuteQueryProps {
   queryState: QueryState;
   baseUrl: string;
   endpoint: string;
-  requestBody: string | Record<string, any> | FormData;
+  requestBody: string | Record<string, any> | FormData | undefined;
   method: AvailableHttpMethod;
   config: Partial<ApiConfig>;
   fetchOptions: Partial<RequestInit>;

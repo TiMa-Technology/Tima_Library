@@ -74,7 +74,7 @@ export class ApiStateManager {
   async executeRequest<TResponse>(
     baseUrl: string,
     endpoint: string,
-    requestBody: string | Record<string, any> | FormData,
+    requestBody: string | Record<string, any> | FormData | undefined,
     method: AvailableHttpMethod,
     options: Partial<ApiConfig> = {},
     fetchOptions: Partial<RequestInit> = {}
