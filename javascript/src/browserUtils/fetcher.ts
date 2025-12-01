@@ -384,7 +384,10 @@ export function createApiStateManager(appAccount: string, appPassword: string) {
  * // response 型別為 ApiResponse<unknown>
  * // 需要手動進行型別斷言或檢查
  */
-export async function customRequest<TResponse = any>(
+export async function customRequest<
+  TResponse = any,
+  TRequestBody extends Record<string, any> = {},
+>(
   apiStateManager: ApiStateManager,
   {
     baseUrl = "../api",
@@ -393,7 +396,7 @@ export async function customRequest<TResponse = any>(
     method = "GET",
     config = {},
     fetchOptions = {},
-  }: QueryOptions
+  }: QueryOptions<TRequestBody>
 ): Promise<ApiResponse<TResponse>> {
   const finalConfig = { ...apiStateManager.getDefaultConfig(), ...config };
   let attempt = 0;
