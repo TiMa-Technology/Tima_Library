@@ -48,10 +48,10 @@ export type AvailableHttpMethod =
   | "PUT"
   | "OPTION";
 
-export interface QueryOptions {
+export interface QueryOptions<T extends Record<string, any> = {}> {
   baseUrl?: string;
   endpoint: string;
-  requestBody?: string | Record<string, any> | FormData;
+  requestBody?: string | T | FormData;
   method?: AvailableHttpMethod;
   config?: Partial<ApiConfig>;
   fetchOptions?: Partial<RequestInit>;

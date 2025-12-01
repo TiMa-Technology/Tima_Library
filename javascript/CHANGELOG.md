@@ -1,5 +1,11 @@
 # @tima_technology/lib
 
+## 1.4.7
+
+### Patch Changes
+
+- fix: 修正客製化請求讓他可以以泛型判斷請求本體
+
 ## 1.4.6
 
 ### Patch Changes
