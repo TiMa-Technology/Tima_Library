@@ -105,6 +105,7 @@ namespace TM.v2.TimaUtils
         /// <param name="incomingRequest">要代理的傳入 HTTP 請求。</param>
         /// <param name="requestUrl">可選的目標 URL，若未提供則使用配置中的 JumpApiURL。</param>
         /// <param name="headersToEncode">需要進行編碼/解碼的標頭清單，若為 null 則使用預設清單（EX. http 無法傳輸中文需進行編譯）。</param>
+        /// <param name="bodyObject">可選的請求內容物件，若提供則會被序列化為 JSON 並作為請求內容。</param>
         /// <returns>包含代理回應的Task，結果為 HTTP response訊息。</returns>
         /// <exception cref="Exception">如果 JumpApiURL 未配置或代理過程中發生錯誤，則拋出異常。</exception>
         /// <example>
@@ -115,7 +116,11 @@ namespace TM.v2.TimaUtils
         /// Console.WriteLine(response.StatusCode); // 輸出回應狀態碼
         /// </code>
         /// </example>
-        public static async Task<HttpResponseMessage> ProxyRequestAsync(HttpRequestMessage incomingRequest, string requestUrl = "", IEnumerable<string> headersToEncode = null)
+        public static async Task<HttpResponseMessage> ProxyRequestAsync(
+            HttpRequestMessage incomingRequest, 
+            string requestUrl = "", 
+            IEnumerable<string> headersToEncode = null,
+            object bodyObject = null)
         {
             #region 跳轉步驟
             // 1. 獲取應用程式路徑（例如 "/eLearning_v2_entrust"）
@@ -188,7 +193,6 @@ namespace TM.v2.TimaUtils
                 var proxyRequest = new HttpRequestMessage(incomingRequest.Method, targetUrl);
 
                 // 複製標頭，排除 Host 和 Content-Length
-                string copyHeader = "";
                 foreach (var header in incomingRequest.Headers)
                 {
                     if (header.Key.Equals("Host", StringComparison.OrdinalIgnoreCase) ||
@@ -202,41 +206,105 @@ namespace TM.v2.TimaUtils
                     {
                         var encodedValues = EncodeHeaderValues(header.Value);
                         proxyRequest.Headers.TryAddWithoutValidation(header.Key, encodedValues);
-                        copyHeader += $"{header.Key} = {string.Join(",", encodedValues)} (encoded)\n";
                     }
                     else
                     {
                         proxyRequest.Headers.TryAddWithoutValidation(header.Key, header.Value);
-                        copyHeader += $"{header.Key} = {string.Join(",", header.Value)}\n";
                     }
                 }
 
                 // 複製內容和內容標頭
-                if (incomingRequest.Content != null)
+                // 因為 POST 的內容是 Stream 只能讀取一次，所以這邊需要特別處理
+                if (incomingRequest.Method != HttpMethod.Get)
                 {
-                    var contentBytes = await incomingRequest.Content.ReadAsByteArrayAsync();
-                    var content = new ByteArrayContent(contentBytes);
+                    string payload = null;
+                    string contentType = "application/json";
 
-                    foreach (var header in incomingRequest.Content.Headers)
+                    // 優先使用傳入的 bodyObject
+                    if (bodyObject != null)
                     {
-                        if (header.Key.Equals("Content-Length", StringComparison.OrdinalIgnoreCase))
-                        {
-                            continue;
-                        }
+                        payload = JsonConvert.SerializeObject(bodyObject);
+                        if (ShouldLog)
+                            WriteLog($"使用傳入的 bodyObject: {payload}");
+                    }
+                    // 其次嘗試從 Request.Content 讀取
+                    else if (incomingRequest.Content != null)
+                    {
+                        contentType = incomingRequest.Content.Headers.ContentType?.MediaType ?? "application/json";
 
-                        // 對指定內容標頭進行編碼
-                        if (headersToProcess.Contains(header.Key))
+                        try
                         {
-                            var encodedValues = EncodeHeaderValues(header.Value);
-                            content.Headers.TryAddWithoutValidation(header.Key, encodedValues);
+                            // 嘗試讀取內容
+                            payload = await incomingRequest.Content.ReadAsStringAsync();
+
+                            if (ShouldLog)
+                                WriteLog($"從 Request.Content 讀取 Payload: {payload}, Content-Type: {contentType}");
                         }
-                        else
+                        catch (Exception ex)
                         {
-                            content.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                            if (ShouldLog)
+                                WriteLog($"讀取 Request.Content 失敗: {ex.Message}");
+                            payload = null;
                         }
                     }
 
-                    proxyRequest.Content = content;
+                    // 設置 Content
+                    if (!string.IsNullOrEmpty(payload))
+                    {
+                        if (contentType.Contains("application/json"))
+                        {
+                            try
+                            {
+                                // 標準化 JSON
+                                var jsonObject = JsonConvert.DeserializeObject<object>(payload);
+                                string jsonContent = JsonConvert.SerializeObject(jsonObject);
+                                proxyRequest.Content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                                if (ShouldLog)
+                                    WriteLog($"標準化後的 Payload: {jsonContent}");
+                            }
+                            catch (JsonException ex)
+                            {
+                                if (ShouldLog)
+                                    WriteLog($"JSON 處理失敗: {ex.Message}, 使用原 Payload");
+                                proxyRequest.Content = new StringContent(payload, Encoding.UTF8, "application/json");
+                            }
+                        }
+                        else
+                        {
+                            // 非 JSON 內容
+                            var contentBytes = Encoding.UTF8.GetBytes(payload);
+                            var content = new ByteArrayContent(contentBytes);
+                            content.Headers.TryAddWithoutValidation("Content-Type", contentType);
+                            proxyRequest.Content = content;
+                        }
+                    }
+                    else if (incomingRequest.Content != null)
+                    {
+                        // 如果無法讀取字串，嘗試以 byte array 方式複製
+                        try
+                        {
+                            var contentBytes = await incomingRequest.Content.ReadAsByteArrayAsync();
+                            var content = new ByteArrayContent(contentBytes);
+
+                            foreach (var header in incomingRequest.Content.Headers)
+                            {
+                                if (header.Key.Equals("Content-Length", StringComparison.OrdinalIgnoreCase))
+                                    continue;
+                                content.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                            }
+
+                            proxyRequest.Content = content;
+
+                            if (ShouldLog)
+                                WriteLog($"使用 byte array 複製 Content，大小: {contentBytes.Length} bytes");
+                        }
+                        catch (Exception ex)
+                        {
+                            if (ShouldLog)
+                                WriteLog($"複製 Content 失敗: {ex.Message}");
+                        }
+                    }
                 }
 
                 // 處理特殊 HTTP 方法
