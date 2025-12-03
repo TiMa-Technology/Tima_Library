@@ -1,5 +1,11 @@
 # @tima_technology/lib
 
+## 1.4.8
+
+### Patch Changes
+
+- fix: 修正UUID方法的回傳型別
+
 ## 1.4.7
 
 ### Patch Changes
