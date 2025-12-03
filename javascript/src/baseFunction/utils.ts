@@ -1,16 +1,17 @@
-import type { ApiError } from "types/api";
+import { UUID } from "node:crypto";
+import type { ApiError } from "../types/api";
 import type {
   DebounceFunction,
   ThrottleFunction,
   ThrottleOptions,
-} from "types/utils";
+} from "../types/utils";
 
 /**
  * 生成新的 GUID
  * @returns {string} 新的 GUID
  * @example newGuid() => "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"
  */
-export function newGuid(): string {
+export function newGuid(): UUID {
   return crypto.randomUUID();
 }
 
@@ -19,7 +20,7 @@ export function newGuid(): string {
  * @returns {string} 空的 GUID
  * @example emptyGuid() => "00000000-0000-0000-0000-000000000000"
  */
-export function emptyGuid(): string {
+export function emptyGuid(): UUID {
   return "00000000-0000-0000-0000-000000000000";
 }
 
