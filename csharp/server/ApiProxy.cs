@@ -363,10 +363,36 @@ namespace TM.v2.TimaUtils
                 // 處理其他錯誤
                 if (ShouldLog)
                 {
-                    WriteLog($"API跳轉失敗: {ex.Message}, {ex.StackTrace}");
+                    WriteLog($"API跳轉失敗: {ex.Message}, {ex.StackTrace}, ip: {GetClientIpAddress(incomingRequest)}");
                 }
                 return CreateErrorResponse(HttpStatusCode.InternalServerError, $"API跳轉失敗: {ex.Message}, {ex.StackTrace}");
             }
+        }
+
+            /// <summary>
+        /// Get Client Ip Address
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public static string GetClientIpAddress(HttpRequestMessage request)
+        {
+            if (request.Properties.ContainsKey("MS_HttpContext"))
+            {
+                HttpContextWrapper context = request.Properties["MS_HttpContext"] as HttpContextWrapper;
+                if (context != null)
+                {
+                    return context.Request.UserHostAddress;
+                }
+            }
+            if (request.Properties.ContainsKey("RemoteEndpointMessageProperty"))
+            {
+                dynamic remoteEndpoint = request.Properties["RemoteEndpointMessageProperty"];
+                if (remoteEndpoint != null)
+                {
+                    return remoteEndpoint.Address;
+                }
+            }
+            return null;
         }
 
         /// <summary>
