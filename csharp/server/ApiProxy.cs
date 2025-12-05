@@ -363,35 +363,75 @@ namespace TM.v2.TimaUtils
                 // 處理其他錯誤
                 if (ShouldLog)
                 {
-                    WriteLog($"API跳轉失敗: {ex.Message}, {ex.StackTrace}, ip: {GetClientIpAddress(incomingRequest)}");
+                    WriteLog($"API跳轉失敗: {ex.Message}, {ex.StackTrace}, ip: {GetClientIp(incomingRequest)}");
                 }
                 return CreateErrorResponse(HttpStatusCode.InternalServerError, $"API跳轉失敗: {ex.Message}, {ex.StackTrace}");
             }
         }
 
-            /// <summary>
-        /// Get Client Ip Address
+        /// <summary>
+        /// 取得客戶端 IP，兼容 MVC / Web API / Self-host，並支援 Proxy (X-Forwarded-For)
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        public static string GetClientIpAddress(HttpRequestMessage request)
+        /// <param name="request">可選，Web API 的 HttpRequestMessage</param>
+        /// <returns>客戶端 IP，若無法取得則回傳 null</returns>
+        /// <example>
+        /// <code>
+        /// public ActionResult Index()
+        /// {
+        ///     string ip = IpHelper.GetClientIp();
+        ///     return Content($"Client IP: {ip}");
+        /// }
+        /// </code>
+        /// <code>
+        /// public IHttpActionResult Get()
+        /// {
+        ///     string ip = IpHelper.GetClientIp(Request);
+        ///     return Ok(ip);
+        /// }
+        /// </code>
+        /// </example>
+        public static string GetClientIp(HttpRequestMessage request = null)
         {
-            if (request.Properties.ContainsKey("MS_HttpContext"))
+            try
             {
-                HttpContextWrapper context = request.Properties["MS_HttpContext"] as HttpContextWrapper;
-                if (context != null)
+                // 1. Web API 自 host (RemoteEndpointMessageProperty)
+                if (request != null && request.Properties.ContainsKey("RemoteEndpointMessageProperty"))
                 {
-                    return context.Request.UserHostAddress;
+                    dynamic remoteEndpoint = request.Properties["RemoteEndpointMessageProperty"];
+                    if (remoteEndpoint != null)
+                        return remoteEndpoint.Address;
+                }
+
+                // 2. Web API / MVC via HttpContext
+                var context = HttpContext.Current;
+                if (context != null && context.Request != null)
+                {
+                    string ip = context.Request.ServerVariables["HTTP_X_FORWARDED_FOR"];
+                    if (!string.IsNullOrEmpty(ip))
+                    {
+                        // X-Forwarded-For 可能有多個 IP，取第一個
+                        ip = ip.Split(',').FirstOrDefault()?.Trim();
+                        if (!string.IsNullOrEmpty(ip))
+                            return ip;
+                    }
+
+                    ip = context.Request.ServerVariables["REMOTE_ADDR"];
+                    if (!string.IsNullOrEmpty(ip))
+                        return ip;
+                }
+
+                // 3. Web API via MS_HttpContext
+                if (request != null && request.Properties.ContainsKey("MS_HttpContext"))
+                {
+                    HttpContextWrapper msContext = request.Properties["MS_HttpContext"] as HttpContextWrapper;
+                    if (msContext != null)
+                        return msContext.Request.UserHostAddress;
                 }
             }
-            if (request.Properties.ContainsKey("RemoteEndpointMessageProperty"))
+            catch
             {
-                dynamic remoteEndpoint = request.Properties["RemoteEndpointMessageProperty"];
-                if (remoteEndpoint != null)
-                {
-                    return remoteEndpoint.Address;
-                }
             }
+
             return null;
         }
 
