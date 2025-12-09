@@ -195,21 +195,16 @@ export function goBack(): void {
  * // https://www.google.com?key=value&name=test
  * getQueryParam() // { key: "value", name: "test" }
  */
+export function getQueryParam(): Record<string, string>;
+export function getQueryParam(key: string): string | null;
 export function getQueryParam(
   key?: string
 ): string | Record<string, string> | null {
   const params = new URLSearchParams(window.location.search);
-
-  if (key) {
+  if (key !== undefined) {
     return params.get(key);
   }
-
-  const all: Record<string, string> = {};
-  params.forEach((value, k) => {
-    all[k] = value;
-  });
-
-  return all;
+  return Object.fromEntries(params);
 }
 
 /**
