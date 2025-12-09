@@ -7,7 +7,7 @@ import {
   afterEach,
   afterAll,
 } from "vitest";
-import { redirect, goBack } from "../navigation";
+import { redirect, goBack, getQueryParam } from "../navigation";
 
 // 模擬 window 物件
 const mockWindow = {
@@ -19,6 +19,7 @@ const mockWindow = {
     host: "",
     pathname: "",
     port: "",
+    search: "",
   },
   open: vi.fn(),
   history: {
@@ -265,5 +266,52 @@ describe("goBack", () => {
   it("應調用 window.history.back", () => {
     goBack();
     expect(mockWindow.history.back).toHaveBeenCalled();
+  });
+});
+
+describe("getQueryParam", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("應要回傳 NULL 如果沒找到對應參數", () => {
+    mockWindow.location.search = "?a=1";
+    expect(getQueryParam("b")).toBe(null);
+  });
+
+  it("應要正確回傳已存在參數", () => {
+    mockWindow.location.search = "?id=123";
+    expect(getQueryParam("id")).toBe("123");
+  });
+
+  it("應回傳整個參數物件如果沒有傳入鍵值且真的有QueryString存在", () => {
+    mockWindow.location.search = "?id=123&name=Dave";
+    expect(getQueryParam()).toEqual({
+      id: "123",
+      name: "Dave",
+    });
+  });
+
+  it("應回傳空物件如果沒有傳入鍵值且沒有QueryString存在", () => {
+    mockWindow.location.search = "";
+    expect(getQueryParam()).toEqual({});
+  });
+
+  it("應回傳 NULL 如果沒有QueryString存在但有傳入鍵值", () => {
+    mockWindow.location.search = "";
+    expect(getQueryParam("id")).toBe(null);
+  });
+
+  it("應正確解析編碼過的資料", () => {
+    mockWindow.location.search = "?q=%E6%B8%AC%E8%A9%A6";
+    expect(getQueryParam("q")).toBe("測試");
+  });
+
+  it("應正確解析多個編碼參數", () => {
+    mockWindow.location.search = "?key1=hello%20world&key2=%E4%BD%A0%E5%A5%BD";
+    expect(getQueryParam()).toEqual({
+      key1: "hello world",
+      key2: "你好",
+    });
   });
 });

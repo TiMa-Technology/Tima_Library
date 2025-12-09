@@ -1,6 +1,6 @@
 {
   "name": "@tima_technology/lib",
-  "version": "1.4.8",
+  "version": "1.4.9",
   "description": "Javascript utils for tima only.",
   "main": "dist/main.js",
   "module": "./dist/main.mjs",
