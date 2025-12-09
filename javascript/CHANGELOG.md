@@ -1,5 +1,11 @@
 # @tima_technology/lib
 
+## 1.4.9
+
+### Patch Changes
+
+- feat: 增加拿取URL參數的彈性，並增加對應測試
+
 ## 1.4.8
 
 ### Patch Changes

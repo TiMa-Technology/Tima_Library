@@ -185,14 +185,31 @@ export function goBack(): void {
 
 /**
  * 獲取 URL 參數 QueryString 的 key
- * @param {string} key - 參數名稱
- * @returns {string|null} 參數值
+ * @param {string=} key - 參數名稱
+ * @returns {string|null|Record<string, string>} 參數值
  * @example
  * // https://www.google.com?key=value
  * getQueryParam("key") // value
+ *
+ * @example
+ * // https://www.google.com?key=value&name=test
+ * getQueryParam() // { key: "value", name: "test" }
  */
-export function getQueryParam(key: string): string | null {
-  return new URLSearchParams(window.location.search).get(key);
+export function getQueryParam(
+  key?: string
+): string | Record<string, string> | null {
+  const params = new URLSearchParams(window.location.search);
+
+  if (key) {
+    return params.get(key);
+  }
+
+  const all: Record<string, string> = {};
+  params.forEach((value, k) => {
+    all[k] = value;
+  });
+
+  return all;
 }
 
 /**
