@@ -1,5 +1,11 @@
 # @tima_technology/lib
 
+## 1.4.10
+
+### Patch Changes
+
+- refactor: 修正getQueryParam的型別判斷，使用 overload 覆蓋重載來達到
+
 ## 1.4.9
 
 ### Patch Changes
