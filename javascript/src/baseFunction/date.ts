@@ -433,3 +433,18 @@ export function adjustDateTime(
     ...formatOptions,
   });
 }
+
+/**
+ * @description 判斷給定的字串是否為 .NET DateTime 的最小值 (MinValue)
+ * 用於表示「永不過期」或「無效日期」的情況
+ *
+ * @param dateStr - 從後端回傳的日期字串
+ * @returns 如果日期等於 0001-01-01T00:00:00，則回傳 true
+ *
+ * @example
+ * isDotNetMinDate("0001-01-01T00:00:00"); // true
+ * isDotNetMinDate("2025-12-23T16:00:00"); // false
+ */
+export function isDotNetMinDate(dateStr: string): boolean {
+  return dateStr === "0001-01-01T00:00:00";
+}
