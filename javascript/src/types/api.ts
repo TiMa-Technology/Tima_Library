@@ -25,7 +25,8 @@ export interface ListApiResponse<T> extends BaseApiResponse {
 export type ApiResponse<T = any> = T & BaseApiResponse;
 
 export interface ApiError extends Error {
-  isApiError?: boolean;
+  isApiError: boolean; // 是否為預期性 API 業務錯誤
+  canRetry: boolean; // 是否可重試
   response?: ApiResponse;
   status?: string;
 }

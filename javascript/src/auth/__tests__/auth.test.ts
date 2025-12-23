@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { AppAuthorization } from "../auth";
 import type { ApiResponse, TokenResponse } from "../../types/api";
+import { emptyGuid } from "../../baseFunction";
 
 // 模擬 sessionStorage
 const mockStorage = {
@@ -153,7 +154,7 @@ describe("AppAuthorization 測試", () => {
 
     it("應在 Token 為空 GUID 時獲取新 Token", async () => {
       mockStorage.getItem
-        .mockReturnValueOnce("00000000-0000-0000-0000-000000000000")
+        .mockReturnValueOnce(emptyGuid())
         .mockReturnValueOnce("2025-06-10T12:00:00Z");
       vi.setSystemTime(new Date("2025-06-09T12:00:00Z"));
       const mockResponse: ApiResponse<TokenResponse> = {

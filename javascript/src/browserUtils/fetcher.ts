@@ -122,15 +122,18 @@ export class ApiStateManager {
       const apiError = new Error(
         data?.errorMessage || "API 請求失敗"
       ) as ApiError;
-      apiError.isApiError = true;
+
       apiError.response = data;
       apiError.status = response.status.toString();
+      apiError.isApiError = !!data?.errorMessage?.length;
+      apiError.canRetry = !apiError.isApiError; // 非預期錯誤才 retry
       throw apiError;
     }
 
     if (data?.errorMessage && options.treatErrorMessageAsError) {
       const apiError = new Error(data.errorMessage) as ApiError;
       apiError.isApiError = true;
+      apiError.canRetry = false;
       apiError.response = data;
       apiError.status = "api_error";
       throw apiError;
@@ -259,6 +262,14 @@ export class QueryState {
  */
 export function createApiStateManager(appAccount: string, appPassword: string) {
   return new ApiStateManager(appAccount, appPassword);
+}
+export function isApiError(error: unknown): error is ApiError {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "isApiError" in error &&
+    "canRetry" in error
+  );
 }
 
 /**
@@ -416,17 +427,10 @@ export async function customRequest<
         },
         fetchOptions
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       attempt++;
 
-      if (error.status === "401") {
-        sessionStorage.removeItem("apitoken");
-        sessionStorage.removeItem("apitokentimeout");
-      } else if (error.isApiError) {
-        throw error;
-      }
-
-      if (attempt < maxAttempts && !error.isApiError) {
+      if (isApiError(error) && error.canRetry && attempt < maxAttempts) {
         const delay = finalConfig.retryDelay(attempt - 1);
         await new Promise((resolve) => setTimeout(resolve, delay));
         continue;
@@ -531,10 +535,7 @@ async function executeQuery(
       attempt++;
       queryState.failureCount = attempt;
 
-      if (error.status === "401") {
-        sessionStorage.removeItem("apitoken");
-        sessionStorage.removeItem("apitokentimeout");
-      } else if (error.isApiError) {
+      if (error.isApiError) {
         queryState.updateStatus("error", null, error);
         throw error;
       }
