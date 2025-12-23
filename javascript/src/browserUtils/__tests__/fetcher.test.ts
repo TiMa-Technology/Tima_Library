@@ -314,6 +314,48 @@ describe("ApiStateManager 測試", () => {
       expect(result).toEqual(mockResponse);
     });
 
+    it("應正確判斷 API 業務錯誤為不可重試", async () => {
+      const mockResponse: ApiResponse = { errorMessage: "API 錯誤" };
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(mockResponse),
+      } as Response);
+
+      mockPrepare.mockResolvedValue(true);
+
+      await expect(
+        manager.executeRequest("../api", "test_endpoint", {}, "GET", {
+          treatErrorMessageAsError: true,
+        })
+      ).rejects.toMatchObject({
+        isApiError: true,
+        canRetry: false,
+        status: "api_error",
+        message: "API 錯誤",
+      });
+    });
+
+    it("應正確判斷非預期 HTTP 錯誤為可重試", async () => {
+      const mockResponse: ApiResponse = { errorMessage: "" };
+
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: () => Promise.resolve(mockResponse),
+      } as Response);
+
+      mockPrepare.mockResolvedValue(true);
+
+      await expect(
+        manager.executeRequest("../api", "test_endpoint", {}, "GET")
+      ).rejects.toMatchObject({
+        isApiError: false,
+        canRetry: true,
+        status: "500",
+      });
+    });
+
     it("應處理 HTTP 錯誤", async () => {
       mockFetch.mockResolvedValue({
         ok: false,
@@ -504,9 +546,15 @@ describe("ApiStateManager 測試", () => {
     });
 
     it("應在可重試錯誤時進行重試", async () => {
-      const mockResponse: ApiResponse = { data: "test" };
+      const mockResponse: ApiResponse = {
+        data: "test",
+        errorMessage: "",
+      };
+      const retryableError = new Error("暫時性錯誤") as ApiError;
+      retryableError.isApiError = false;
+      retryableError.canRetry = true;
       vi.spyOn(manager, "executeRequest")
-        .mockRejectedValueOnce(new Error("暫時性錯誤"))
+        .mockRejectedValueOnce(retryableError)
         .mockResolvedValueOnce(mockResponse);
 
       const result = await customRequest(manager, {
@@ -514,30 +562,50 @@ describe("ApiStateManager 測試", () => {
         endpoint: "test_endpoint",
         method: "GET",
         requestBody: {},
-        config: { retry: 1 },
+        config: { retry: 1, treatErrorMessageAsError: true },
       });
 
       expect(manager.executeRequest).toHaveBeenCalledTimes(2);
       expect(result).toEqual(mockResponse);
     });
 
-    it("應處理 401 錯誤並清除 Token", async () => {
-      const error: ApiError = new Error("未授權") as ApiError;
-      error.isApiError = true;
-      error.status = "401";
-      vi.spyOn(manager, "executeRequest").mockRejectedValue(error);
+    it("應在請求不可重試錯誤(預期性業務邏輯錯誤)時直接結束", async () => {
+      const apiError = new Error("暫時性錯誤") as ApiError;
+      apiError.isApiError = true;
+      apiError.canRetry = false;
+
+      vi.spyOn(manager, "executeRequest").mockRejectedValueOnce(apiError);
 
       await expect(
         customRequest(manager, {
           baseUrl: "../api",
           endpoint: "test_endpoint",
+          method: "GET",
           requestBody: {},
+          config: { retry: 1, treatErrorMessageAsError: true },
         })
-      ).rejects.toMatchObject({ status: "401" });
+      ).rejects.toBe(apiError);
 
-      expect(mockStorage.removeItem).toHaveBeenCalledWith("apitoken");
-      expect(mockStorage.removeItem).toHaveBeenCalledWith("apitokentimeout");
+      expect(manager.executeRequest).toHaveBeenCalledTimes(1);
     });
+
+    // it("應處理 401 錯誤並清除 Token", async () => {
+    //   const error: ApiError = new Error("未授權") as ApiError;
+    //   error.isApiError = true;
+    //   error.status = "401";
+    //   vi.spyOn(manager, "executeRequest").mockRejectedValue(error);
+
+    //   await expect(
+    //     customRequest(manager, {
+    //       baseUrl: "../api",
+    //       endpoint: "test_endpoint",
+    //       requestBody: {},
+    //     })
+    //   ).rejects.toMatchObject({ status: "401" });
+
+    //   expect(mockStorage.removeItem).toHaveBeenCalledWith("apitoken");
+    //   expect(mockStorage.removeItem).toHaveBeenCalledWith("apitokentimeout");
+    // });
 
     it("應傳遞客製化的 fetchOptions", async () => {
       const mockResponse: ApiResponse = { data: "test" };

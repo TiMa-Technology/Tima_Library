@@ -1,6 +1,6 @@
 import type { ApiResponse, TokenResponse } from "../types/api";
 import { getBaseUrl } from "../browserUtils";
-import { emptyGuid } from "../baseFunction";
+import { isEmptyGuid } from "../baseFunction";
 
 export class AppAuthorization {
   private appAccount: string;
@@ -83,9 +83,11 @@ export class AppAuthorization {
     const apiToken = sessionStorage.getItem("apitoken");
     const apiTokenTimeout = sessionStorage.getItem("apitokentimeout");
 
+    if (apiTokenTimeout === "0001-01-01T00:00:00") return true;
+
     if (
       apiToken &&
-      apiToken !== emptyGuid() &&
+      !isEmptyGuid(apiToken) &&
       apiTokenTimeout &&
       new Date() < new Date(apiTokenTimeout)
     ) {
