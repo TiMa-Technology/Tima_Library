@@ -1,6 +1,6 @@
 import type { ApiResponse, TokenResponse } from "../types/api";
 import { getBaseUrl } from "../browserUtils";
-import { isEmptyGuid } from "../baseFunction";
+import { isDotNetMinDate, isEmptyGuid } from "../baseFunction";
 
 export class AppAuthorization {
   private appAccount: string;
@@ -83,17 +83,16 @@ export class AppAuthorization {
     const apiToken = sessionStorage.getItem("apitoken");
     const apiTokenTimeout = sessionStorage.getItem("apitokentimeout");
 
-    if (apiTokenTimeout === "0001-01-01T00:00:00") return true;
-
-    if (
+    const hasValidToken =
       apiToken &&
-      !isEmptyGuid(apiToken) &&
       apiTokenTimeout &&
-      new Date() < new Date(apiTokenTimeout)
-    ) {
-      headers["Authorization"] = `Basic ${btoa(
-        `${this.appAccount}:${apiToken}`
-      )}`;
+      !isEmptyGuid(apiToken) &&
+      (isDotNetMinDate(apiTokenTimeout) ||
+        new Date() < new Date(apiTokenTimeout));
+
+    if (hasValidToken) {
+      headers["Authorization"] =
+        `Basic ${btoa(`${this.appAccount}:${apiToken}`)}`;
       return true;
     }
 

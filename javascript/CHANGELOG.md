@@ -1,5 +1,11 @@
 # @tima_technology/lib
 
+## 1.4.12
+
+### Patch Changes
+
+- fix: 修正授權請求標頭的判斷，如果是沒設定到期時間應該直接通過
+
 ## 1.4.11
 
 ### Patch Changes
