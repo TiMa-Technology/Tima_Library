@@ -1,5 +1,11 @@
 # @tima_technology/lib
 
+## 1.4.13
+
+### Patch Changes
+
+- feat: 增加排序參數到列表請求內容
+
 ## 1.4.12
 
 ### Patch Changes

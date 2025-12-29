@@ -16,6 +16,8 @@ export interface ListApiResponse<T> extends BaseApiResponse {
   totalCount?: number;
   pageSize?: number;
   currentPage?: number;
+  sortField?: string;
+  sortOrder?: "asc" | "desc";
 }
 
 /**
