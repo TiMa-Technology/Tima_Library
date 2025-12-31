@@ -4,7 +4,7 @@
 
 ### Patch Changes
 
-- feat: 增加排序參數到列表請求內容
+- feat: 更新 README 增加規格查閱
 
 ## 1.4.12
 
