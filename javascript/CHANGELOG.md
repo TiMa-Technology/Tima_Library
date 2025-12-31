@@ -1,5 +1,11 @@
 # @tima_technology/lib
 
+## 1.4.13
+
+### Patch Changes
+
+- feat: 更新 README 增加規格查閱
+
 ## 1.4.12
 
 ### Patch Changes
